@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1e293b">
+<title>Sonu Sir's Classes</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;
+  --surf:#fff;--bg:#f1f5f9;--bg2:#e2e8f0;
+  --blue:#2563eb;--blt:#eff6ff;--bdk:#1d4ed8;
+  --purple:#7c3aed;--plt:#f5f3ff;
+  --orange:#ea580c;--olt:#fff7ed;
+  --green:#16a34a;--glt:#f0fdf4;
+  --yellow:#d97706;--ylt:#fffbeb;
+  --red:#dc2626;--rlt:#fef2f2;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --r4:4px;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--r99:999px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.07);
+  --sh:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 12px 40px rgba(0,0,0,.13);
+  --sh-xl:0 24px 64px rgba(0,0,0,.15);
+  --gb:linear-gradient(135deg,#2563eb,#7c3aed);
+  --nav-h:56px;
+  --font:'Plus Jakarta Sans','Noto Sans Devanagari',sans-serif;
+}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+button{font-family:var(--font);cursor:pointer;border:none;outline:none;-webkit-appearance:none}
+input,select,textarea{font-family:var(--font);outline:none;-webkit-appearance:none}
+img{display:block;max-width:100%}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ─── VIEWS ─── */
+.view{display:none!important}.view.on{display:block!important}
+
+/* ─── NAV ─── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:400;height:var(--nav-h);background:rgba(15,23,42,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-in{height:100%;padding:0 12px;display:flex;align-items:center;gap:8px;max-width:1200px;margin:0 auto}
+.nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+.nav-mark{width:28px;height:28px;border-radius:var(--r8);background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 10px rgba(37,99,235,.35)}
+.nav-name{font-size:13px;font-weight:800;letter-spacing:-.3px;color:#fff;white-space:nowrap}
+@media(min-width:768px){.nav-in{padding:0 16px;gap:10px}.nav-mark{width:32px;height:32px;font-size:15px}.nav-name{font-size:14px}}
+.nav-bc{flex:1;display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.4);overflow:hidden}
+@media(min-width:768px){.nav-bc{display:flex}}
+.nav-bc .sep{opacity:.5;flex-shrink:0}
+.nav-bc .crumb{cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.15s;max-width:120px}
+.nav-bc .crumb:hover{color:rgba(255,255,255,.8)}
+.nav-bc .cur{color:rgba(255,255,255,.7);font-weight:600;cursor:default}
+.nav-r{margin-left:auto;display:flex;gap:4px;align-items:center;flex-shrink:0}
+@media(min-width:768px){.nav-r{gap:6px}}
+.nbtn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:var(--r99);font-size:11px;font-weight:700;transition:.2s;white-space:nowrap;text-decoration:none}
+@media(min-width:768px){.nbtn{padding:6px 13px;font-size:12px;gap:5px}}
+.nbtn-g{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15)}.nbtn-g:hover{background:rgba(255,255,255,.18)}
+.nbtn-s{background:var(--gb);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.3)}.nbtn-s:hover{box-shadow:0 5px 16px rgba(37,99,235,.45);transform:translateY(-1px)}
+.nbtn-r{background:var(--rlt);color:var(--red);border:1px solid rgba(220,38,38,.2)}.nbtn-r:hover{background:var(--red);color:#fff}
+@media(max-width:400px){.nbtn-s{display:none}}
+
+/* ─── NAV TABS WITH DROPDOWN ─── */
+.nav-tabs{display:none;align-items:center;gap:2px;margin-left:12px}
+@media(min-width:768px){.nav-tabs{display:flex}}
+.nav-tab{position:relative;padding:6px 12px;font-size:12px;font-weight:600;color:rgba(255,255,255,.7);cursor:pointer;border-radius:var(--r8);transition:.15s;background:transparent;border:none}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,.1)}
+.nav-tab.active{color:#fff;background:rgba(255,255,255,.12)}
+.nav-tab-arrow{margin-left:4px;font-size:8px;opacity:.6}
+.nav-dropdown{position:absolute;top:100%;left:0;min-width:180px;background:rgba(15,23,42,.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:var(--r12);padding:6px;margin-top:6px;opacity:0;visibility:hidden;transform:translateY(-8px);transition:.2s;z-index:500;box-shadow:var(--sh-lg)}
+.nav-tab:hover .nav-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+.nav-dd-item{display:block;padding:10px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.8);border-radius:var(--r8);transition:.15s;cursor:pointer;text-decoration:none}
+.nav-dd-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-dd-empty{padding:14px;text-align:center;font-size:11px;color:rgba(255,255,255,.4)}
+.mobile-tabs-btn{display:flex;padding:5px 10px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.9);border-radius:var(--r8);font-size:10px;font-weight:700;border:1px solid rgba(255,255,255,.15);cursor:pointer;align-items:center;gap:3px}
+@media(min-width:768px){.mobile-tabs-btn{display:none}}
+.mobile-tabs-menu{position:fixed;top:var(--nav-h);left:0;right:0;background:rgba(15,23,42,.98);backdrop-filter:blur(20px);padding:12px;display:none;z-index:450;border-bottom:1px solid rgba(255,255,255,.08);max-height:70vh;overflow-y:auto}
+.mobile-tabs-menu.show{display:block}
+.mobile-tab-section{margin-bottom:12px}
+.mobile-tab-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;padding:6px 10px}
+.mobile-tab-item{display:block;padding:12px 14px;font-size:13px;font-weight:500;color:rgba(255,255,255,.8);border-radius:var(--r8);margin-bottom:2px}
+.mobile-tab-item:active{background:rgba(255,255,255,.1)}
+
+/* ─── HERO BANNER SLIDER ─── */
+.hero-banner{position:relative;height:320px;background:#1e293b;overflow:hidden;margin-top:var(--nav-h)}
+.hero-slider{display:flex;width:100%;height:100%;transition:transform 0.5s ease-in-out}
+.hero-slide{min-width:100%;height:100%;position:relative;flex-shrink:0}
+.hero-slide img{width:100%;height:100%;object-fit:cover;object-position:center}
+.hero-slide-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,23,42,.5) 0%,rgba(15,23,42,.85) 100%);display:flex;align-items:flex-end;padding:16px}
+.hero-slide-content{max-width:100%;width:100%;padding-bottom:40px}
+.hero-slide-badge{display:inline-block;padding:5px 12px;background:rgba(37,99,235,.95);color:#fff;font-size:9px;font-weight:700;border-radius:var(--r99);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.hero-slide-title{font-size:20px;font-weight:800;color:#fff;line-height:1.25;margin-bottom:6px;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.hero-slide-subtitle{font-size:11px;color:rgba(255,255,255,.8);line-height:1.5;margin-bottom:12px;max-width:90%}
+.hero-slide-btns{display:flex;gap:8px;flex-wrap:wrap}
+.hero-slide-btn{padding:10px 20px;border-radius:var(--r8);font-size:12px;font-weight:700;transition:.2s;cursor:pointer;border:none}
+.hero-slide-btn-p{background:var(--gb);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.4)}
+.hero-slide-btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(37,99,235,.45)}
+.hero-slide-btn-s{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(10px);display:none}
+@media(min-width:480px){.hero-slide-btn-s{display:inline-flex}}
+.hero-slide-btn-s:hover{background:rgba(255,255,255,.25)}
+.hero-banner-default{position:absolute;inset:0;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#312e81 100%);display:flex;align-items:center;justify-content:center}
+.hero-banner-default-ico{font-size:64px;opacity:.15}
+.hero-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:10}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:.2s;border:none}
+.hero-dot.active{background:#fff;width:20px;border-radius:var(--r99)}
+.hero-arrows{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 6px;pointer-events:none;z-index:10}
+.hero-arrow{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:.2s;border:none;pointer-events:auto;backdrop-filter:blur(8px)}
+.hero-arrow:hover{background:rgba(255,255,255,.25)}
+@media(min-width:768px){.hero-banner{height:380px}.hero-slide-overlay{background:linear-gradient(to right,rgba(15,23,42,.85) 0%,rgba(15,23,42,.4) 60%,transparent 100%);align-items:center;padding:24px}.hero-slide-content{padding-bottom:0;padding-left:20px;max-width:550px}.hero-slide-title{font-size:30px}.hero-slide-subtitle{font-size:13px}.hero-arrow{width:36px;height:36px;font-size:16px;background:rgba(0,0,0,.4)}.hero-dots{bottom:16px}.hero-dot{width:8px;height:8px}.hero-dot.active{width:24px}}
+@media(min-width:1200px){.hero-banner{height:460px}.hero-slide-title{font-size:40px}.hero-slide-content{padding-left:40px;max-width:600px}.hero-slide-subtitle{font-size:14px}}
+
+/* ─── ANNOUNCE ─── */
+.ann-bar{background:linear-gradient(90deg,#1e3a5f 0%,#1e293b 100%);padding:10px 12px;display:flex;align-items:center;gap:8px;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.08)}
+.ann-lbl{font-size:9px;font-weight:700;color:#60a5fa;background:rgba(37,99,235,.25);padding:3px 8px;border-radius:var(--r99);white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px}
+@media(min-width:768px){.ann-lbl{font-size:10px;padding:4px 10px}}
+.ann-scroll{flex:1;overflow:hidden;position:relative;mask-image:linear-gradient(90deg,transparent 0%,#000 5%,#000 95%,transparent 100%)}
+.ann-inner{display:flex;gap:50px;white-space:nowrap;animation:scroll-x 12s linear infinite}
+@keyframes scroll-x{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ann-item{font-size:12px;color:rgba(255,255,255,.75);font-weight:500;display:inline-flex;align-items:center}
+.ann-item .dot{color:#f59e0b;margin-right:6px;font-size:8px}
+
+/* ─── STATS BAR ─── */
+.stats-bar{background:var(--surf);border-bottom:1px solid var(--border);padding:12px 12px}
+.stats-bar-in{max-width:1200px;margin:0 auto;display:flex;justify-content:space-around;gap:4px}
+.sb-stat{text-align:center;flex:1;min-width:0}
+.sb-n{font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1}
+@media(min-width:768px){.sb-n{font-size:22px}}
+.sb-l{font-size:8px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.2px;margin-top:3px}
+@media(min-width:768px){.sb-l{font-size:9px;letter-spacing:.3px}}
+
+/* ─── WRAP ─── */
+.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
+.sec-hd{font-size:17px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.sec-sub{font-size:12px;color:var(--ink3);margin-bottom:16px}
+
+/* ─── COURSE CARDS ─── */
+.courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+@media(max-width:600px){.courses-grid{grid-template-columns:1fr}}
+.cc{background:var(--surf);border-radius:var(--r16);overflow:hidden;border:1px solid var(--border);box-shadow:var(--sh-sm);transition:.22s cubic-bezier(.4,0,.2,1);cursor:pointer;-webkit-touch-callout:none}
+.cc:active{transform:scale(.98)}
+@media(hover:hover){.cc:hover{transform:translateY(-4px);box-shadow:var(--sh-lg);border-color:rgba(37,99,235,.3)}}
+.cc-thumb{width:100%;height:160px;background:var(--bg2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:48px}
+.cc-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cc-thumb-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,23,42,.6) 0%,transparent 50%)}
+.cc-body{padding:14px 16px}
+.cc-title{font-size:14px;font-weight:800;letter-spacing:-.2px;margin-bottom:4px}
+.cc-desc{font-size:11px;color:var(--ink3);line-height:1.5;margin-bottom:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cc-chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--r99);font-size:10px;font-weight:700}
+.cb{background:var(--blt);color:var(--blue)}.cp{background:var(--plt);color:var(--purple)}.cg{background:var(--glt);color:var(--green)}.cy{background:var(--ylt);color:var(--yellow)}
+.cc-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cc-fl{font-size:11px;color:var(--ink3)}
+.cc-fr{font-size:12px;font-weight:700;color:var(--blue)}
+
+/* ─── PDF GRID ─── */
+.pdf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+@media(max-width:600px){.pdf-grid{grid-template-columns:1fr}}
+.pdf-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);padding:14px;display:flex;align-items:flex-start;gap:11px;transition:.18s;cursor:pointer;box-shadow:var(--sh-sm)}
+.pdf-card:active{transform:scale(.98)}
+@media(hover:hover){.pdf-card:hover{transform:translateY(-2px);box-shadow:var(--sh-lg);border-color:rgba(220,38,38,.3)}}
+.pdf-ico{width:40px;height:48px;background:var(--rlt);border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid rgba(220,38,38,.12)}
+.pdf-info{flex:1;min-width:0}
+.pdf-name{font-size:12px;font-weight:700;line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pdf-meta{font-size:10px;color:var(--ink3)}
+.pdf-dl{margin-top:6px;font-size:10px;font-weight:700;color:var(--red)}
+
+/* ─── LOGIN ─── */
+.login-page{min-height:100vh;background:#0f172a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:20px;padding-top:calc(var(--nav-h) + 20px)}
+.login-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 50%,rgba(37,99,235,.25),transparent 60%),radial-gradient(ellipse 60% 60% at 80% 30%,rgba(124,58,237,.15),transparent 60%)}
+.login-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:26px 26px}
+.login-box{position:relative;width:100%;max-width:380px}
+.login-brand{text-align:center;margin-bottom:24px}
+.login-ico{width:48px;height:48px;border-radius:var(--r12);background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 18px rgba(37,99,235,.4);margin:0 auto 10px}
+.login-title{font-size:17px;font-weight:800;color:#fff}
+.login-sub{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px}
+.role-tabs{display:flex;gap:5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r12);padding:4px;margin-bottom:16px}
+.role-tab{flex:1;padding:8px 6px;border-radius:var(--r8);font-size:12px;font-weight:700;color:rgba(255,255,255,.32);transition:.18s;text-align:center}
+.role-tab.on{background:rgba(255,255,255,.1);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.login-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:var(--r16);padding:24px;backdrop-filter:blur(20px)}
+.login-err{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5;padding:9px 13px;border-radius:var(--r8);font-size:11px;font-weight:600;margin-bottom:12px;display:none}
+.login-err.show{display:block}
+.lf{margin-bottom:12px}
+.lf label{display:block;font-size:10px;font-weight:700;color:rgba(255,255,255,.32);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+.lf input{width:100%;padding:10px 12px;border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r8);font-size:13px;color:#fff;background:rgba(255,255,255,.06);transition:.16s}
+.lf input:focus{border-color:var(--blue);background:rgba(37,99,235,.1)}
+.lf input::placeholder{color:rgba(255,255,255,.2)}
+.login-btn{width:100%;padding:11px;border-radius:var(--r8);font-size:13px;font-weight:700;background:var(--gb);color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.32);transition:.2s;margin-top:2px}
+.login-btn:active{transform:scale(.98)}
+.login-back{width:100%;margin-top:10px;padding:9px;border-radius:var(--r8);font-size:12px;font-weight:600;background:transparent;color:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.07)}
+
+/* ─── DASHBOARD LAYOUT ─── */
+.dash-wrap{display:flex;min-height:calc(100vh - var(--nav-h));margin-top:var(--nav-h)}
+.dash-sb{width:240px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--border);position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;display:none}
+@media(min-width:768px){.dash-sb{display:flex;flex-direction:column}}
+.dash-main{flex:1;min-width:0;overflow-x:hidden}
+.ds-user{padding:16px;border-bottom:1px solid var(--border);text-align:center}
+.ds-av{width:48px;height:48px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 8px;color:#fff;font-weight:800;box-shadow:0 4px 12px rgba(37,99,235,.25)}
+.ds-nm{font-size:13px;font-weight:800}
+.ds-role{font-size:9px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:1px}
+.ds-batch{font-size:10px;color:var(--blue);font-weight:700;background:var(--blt);padding:2px 8px;border-radius:var(--r99);margin-top:5px;display:inline-block}
+.sb-nav{flex:1;padding:8px}
+.sb-lbl{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:8px 8px 5px}
+.sb-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--r8);width:100%;text-align:left;background:transparent;color:var(--ink2);font-size:12px;font-weight:600;transition:.15s;border:none}
+.sb-btn:hover{background:var(--bg);color:var(--ink)}
+.sb-btn.on{background:var(--blt);color:var(--blue)}
+.sb-ico{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+
+/* ─── BOTTOM NAV (mobile) ─── */
+.bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--surf);border-top:1px solid var(--border);padding:6px 0 max(6px, env(safe-area-inset-bottom))}
+@media(min-width:768px){.bottom-nav{display:none}}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;cursor:pointer;transition:.15s;border:none;background:transparent;color:var(--ink3)}
+.bn-item.on{color:var(--blue)}
+.bn-ico{font-size:18px;line-height:1}
+.bn-lbl{font-size:9px;font-weight:700;letter-spacing:.1px}
+
+/* ─── DASH PANELS ─── */
+.d-content{padding:16px 16px 100px}
+@media(min-width:768px){.d-content{padding:24px 24px 40px}}
+.d-panel{display:none}.d-panel.on{display:block;animation:fup .2s ease}
+@keyframes fup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.d-welcome{background:var(--gb);border-radius:var(--r16);padding:20px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.d-welcome-bg{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:22px 22px}
+.d-welcome h2{font-size:16px;font-weight:800;position:relative}
+.d-welcome p{font-size:12px;opacity:.65;position:relative;margin-top:3px}
+.d-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+@media(min-width:480px){.d-grid{grid-template-columns:repeat(4,1fr)}}
+.d-stat{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);padding:14px 12px;box-shadow:var(--sh-sm);text-align:center}
+.dsi{font-size:22px;margin-bottom:4px}
+.dsn{font-size:20px;font-weight:800;letter-spacing:-1px;color:var(--ink)}
+.dsl{font-size:10px;color:var(--ink3);margin-top:1px}
+
+/* ─── MODULE CARDS ─── */
+.mod-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);overflow:hidden;margin-bottom:12px;box-shadow:var(--sh-sm)}
+.mc-hd{padding:14px 16px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent}
+.mc-hd:active{background:var(--bg)}
+@media(hover:hover){.mc-hd:hover{background:var(--bg)}}
+.mc-ico{width:38px;height:38px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.mc-info{flex:1;min-width:0}
+.mc-title{font-size:13px;font-weight:800;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-sub{font-size:10px;color:var(--ink3);margin-top:2px}
+.mc-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--r99);background:var(--blt);color:var(--blue);flex-shrink:0}
+.mc-arr{font-size:14px;color:var(--ink3);transition:.22s;flex-shrink:0}
+.mc-hd.open .mc-arr{transform:rotate(90deg)}
+.mc-body{display:none;border-top:1px solid var(--border)}
+.mc-body.open{display:block}
+
+/* ─── CHAPTER ROW ─── */
+.ch-row{display:flex;align-items:center;gap:10px;padding:12px 16px;transition:.15s;cursor:pointer;border-bottom:1px solid var(--border)}
+.ch-row:last-child{border-bottom:none}
+.ch-row:active{background:var(--blt)}
+@media(hover:hover){.ch-row:hover{background:var(--blt)}}
+.ch-row.locked{opacity:.5;cursor:not-allowed}
+.ch-row.locked:active,.ch-row.locked:hover{background:transparent}
+.ch-n{width:24px;height:24px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--ink3);flex-shrink:0;transition:.15s}
+.ch-row:not(.locked):active .ch-n,.ch-row:not(.locked):hover .ch-n{background:var(--blue);color:#fff}
+.ch-em{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.ch-info{flex:1;min-width:0}
+.ch-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-meta{font-size:10px;color:var(--ink3);margin-top:1px}
+.ch-bdgs{display:flex;gap:4px;flex-shrink:0}
+.ch-bdg{padding:2px 7px;border-radius:var(--r99);font-size:9px;font-weight:700}
+.cbn{background:var(--blt);color:var(--blue)}
+.cbp{background:var(--olt);color:var(--orange)}
+.cbq{background:var(--ylt);color:var(--yellow)}
+.cbs{background:var(--bg2);color:var(--ink3)}
+.ch-arr{font-size:13px;color:var(--ink3);flex-shrink:0}
+
+/* ─── READER ─── */
+.reader-wrap{display:flex;min-height:calc(100vh - var(--nav-h));margin-top:var(--nav-h)}
+.reader-sb{width:240px;flex-shrink:0;background:var(--surf);border-right:1px solid var(--border);position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;display:none}
+@media(min-width:900px){.reader-sb{display:block}}
+.rsb-title{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;padding:14px 12px 8px}
+.rsb-item{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;transition:.15s;border-left:2px solid transparent}
+.rsb-item:hover{background:var(--bg)}
+.rsb-item.on{background:var(--blt);border-left-color:var(--blue)}
+.rsb-item.locked{opacity:.4;cursor:not-allowed}
+.rsb-n{width:20px;height:20px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--ink3);flex-shrink:0}
+.rsb-item.on .rsb-n{background:var(--blue);color:#fff}
+.rsb-nm{font-size:11px;font-weight:600;color:var(--ink2);flex:1;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rsb-item.on .rsb-nm{color:var(--blue);font-weight:700}
+.rsb-done{font-size:10px;color:var(--green);flex-shrink:0}
+
+.reader-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.reader-tb{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:var(--surf);position:sticky;top:var(--nav-h);z-index:50;flex-wrap:wrap;gap:6px}
+.r-title{font-size:13px;font-weight:800;flex:1;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.r-tabs{display:flex;gap:2px;padding:3px;background:var(--bg);border-radius:var(--r8)}
+.rtab{padding:5px 11px;border-radius:6px;font-size:11px;font-weight:700;color:var(--ink2);transition:.15s}
+.rtab.on{background:var(--surf);color:var(--blue);box-shadow:var(--sh-sm)}
+.r-navs{display:flex;gap:4px}
+.rnb{padding:5px 11px;border-radius:var(--r8);font-size:11px;font-weight:700;border:1.5px solid var(--border);color:var(--ink2);transition:.15s}
+.rnb:hover{border-color:var(--blue);color:var(--blue);background:var(--blt)}
+.fs-btn{width:30px;height:30px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);display:flex;align-items:center;justify-content:center;font-size:13px;border:1.5px solid var(--border);flex-shrink:0;transition:.15s}
+.fs-btn:hover{background:var(--blt);color:var(--blue);border-color:var(--blue)}
+
+.reader-body{flex:1;padding:20px 16px 100px}
+@media(min-width:768px){.reader-body{padding:28px 32px 40px;max-width:820px;margin:0 auto;width:100%}}
+.tab-pane{display:none}.tab-pane.on{display:block;animation:fup .2s ease}
+
+/* ─── NOTES RENDER ─── */
+.nr h1{font-size:19px;font-weight:800;color:var(--ink);margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid var(--blt);letter-spacing:-.3px}
+.nr h2{font-size:14px;font-weight:700;color:var(--bdk);margin:20px 0 8px;display:flex;align-items:center;gap:7px}
+.nr h2::before{content:'';width:3px;height:15px;background:var(--gb);border-radius:3px;flex-shrink:0}
+.nr h3{font-size:13px;font-weight:700;color:var(--ink);margin:14px 0 6px}
+.nr p{font-size:13px;line-height:1.85;color:var(--ink2);margin-bottom:9px}
+.nr ul,.nr ol{padding-left:18px;margin-bottom:11px}
+.nr li{font-size:13px;line-height:1.8;color:var(--ink2);margin-bottom:3px}
+.nr strong{color:var(--ink);font-weight:700}
+.nr table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px;border:1px solid var(--border);overflow:hidden;border-radius:var(--r8);display:block;overflow-x:auto}
+.nr th{background:var(--bg);padding:8px 11px;text-align:left;font-weight:700;color:var(--ink);border-bottom:1px solid var(--border2);white-space:nowrap}
+.nr td{padding:7px 11px;border-bottom:1px solid var(--border);color:var(--ink2)}
+.nr tr:last-child td{border-bottom:none}
+.nr hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+.tip-b{background:var(--blt);border-left:3px solid var(--blue);padding:10px 13px;border-radius:0 var(--r8) var(--r8) 0;margin:11px 0;font-size:12px;color:var(--bdk)}
+.imp-b{background:var(--ylt);border-left:3px solid var(--yellow);padding:10px 13px;border-radius:0 var(--r8) var(--r8) 0;margin:11px 0;font-size:12px;color:#92400e}
+.eg-b{background:var(--glt);border-left:3px solid var(--green);padding:10px 13px;border-radius:0 var(--r8) var(--r8) 0;margin:11px 0;font-size:12px;color:#14532d}
+
+/* PPT */
+  .ppt-wrap{border-radius:var(--r12);overflow:hidden;background:#000;position:relative;padding-bottom:56.25%}
+  .ppt-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+  .ppt-empty{padding:40px 16px;text-align:center;background:var(--bg);border-radius:var(--r12);border:2px dashed var(--border)}
+  .ppt-card{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);border-radius:var(--r16);padding:40px 24px;text-align:center}
+  .ppt-card-ico{width:80px;height:80px;background:linear-gradient(135deg,#ea580c 0%,#dc2626 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;box-shadow:0 12px 40px rgba(234,88,12,.4);animation:pulse-ppt 2s ease-in-out infinite}
+  @keyframes pulse-ppt{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  .ppt-card-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:8px}
+  .ppt-card-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.5}
+  .ppt-card-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:linear-gradient(135deg,#ea580c 0%,#dc2626 100%);color:#fff;font-size:15px;font-weight:700;border-radius:var(--r99);text-decoration:none;transition:.25s;box-shadow:0 6px 24px rgba(234,88,12,.45)}
+  .ppt-card-btn:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(234,88,12,.55)}
+  .ppt-card-btn svg{width:20px;height:20px}
+  
+  /* BACK BUTTON */
+  .back-btn-float{position:fixed;bottom:80px;left:16px;z-index:250;padding:12px 20px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);font-size:13px;font-weight:700;color:var(--ink);box-shadow:0 4px 20px rgba(0,0,0,.15);display:none;align-items:center;gap:8px;cursor:pointer;transition:.25s}
+  .back-btn-float:hover{background:var(--blt);color:var(--blue);transform:translateY(-3px);box-shadow:0 8px 28px rgba(37,99,235,.2)}
+  .back-btn-float:active{transform:scale(.96)}
+  @media(min-width:768px){.back-btn-float{bottom:28px;left:28px;padding:14px 24px}}
+
+/* ─── QUIZ ─── */
+.quiz-section-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);overflow:hidden;margin-bottom:10px}
+.qsc-hd{padding:13px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.15s}
+.qsc-hd:active{background:var(--bg)}
+@media(hover:hover){.qsc-hd:hover{background:var(--bg)}}
+.qsc-ico{width:34px;height:34px;border-radius:var(--r8);background:var(--ylt);color:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.qsc-info{flex:1}
+.qsc-name{font-size:13px;font-weight:800}
+.qsc-sub{font-size:10px;color:var(--ink3);margin-top:1px}
+.qsc-arr{font-size:13px;color:var(--ink3);transition:.22s}
+.qsc-hd.open .qsc-arr{transform:rotate(90deg)}
+.qsc-body{display:none;border-top:1px solid var(--border);padding:10px}
+.qsc-body.open{display:block}
+
+.quiz-ch-item{display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:var(--r8);cursor:pointer;transition:.15s;border:1px solid transparent;margin-bottom:5px}
+.quiz-ch-item:active{background:var(--ylt);border-color:rgba(217,119,6,.2)}
+@media(hover:hover){.quiz-ch-item:hover{background:var(--ylt);border-color:rgba(217,119,6,.2)}}
+.qci-ico{font-size:16px;flex-shrink:0}
+.qci-info{flex:1;min-width:0}
+.qci-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qci-meta{font-size:10px;color:var(--ink3);margin-top:1px}
+.qci-score{font-size:11px;font-weight:700;padding:2px 8px;border-radius:var(--r99)}
+.qs-done{background:var(--glt);color:var(--green)}
+.qs-pending{background:var(--ylt);color:var(--yellow)}
+
+/* ─── QUIZ PLAYER ─── */
+.quiz-player{background:var(--surf);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden;box-shadow:var(--sh)}
+.qp-hd{padding:16px;background:linear-gradient(135deg,#d97706,#ea580c);color:#fff}
+.qp-title{font-size:15px;font-weight:800;margin-bottom:2px}
+.qp-meta{font-size:11px;opacity:.75}
+.qp-progress{height:4px;background:rgba(255,255,255,.25);border-radius:var(--r99);margin-top:10px;overflow:hidden}
+.qp-prog-bar{height:100%;background:#fff;border-radius:var(--r99);transition:.4s}
+.qp-body{padding:16px}
+.qp-q-num{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.qp-question{font-size:14px;font-weight:700;color:var(--ink);line-height:1.6;margin-bottom:16px}
+.qp-opts{display:flex;flex-direction:column;gap:8px}
+.qp-opt{padding:12px 14px;border-radius:var(--r8);border:1.5px solid var(--border);font-size:13px;font-weight:600;text-align:left;transition:.18s;background:var(--surf);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
+.qp-opt:active{transform:scale(.99)}
+.qp-opt-letter{width:26px;height:26px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;transition:.18s}
+.qp-opt:hover .qp-opt-letter{background:var(--blue);color:#fff}
+.qp-opt.selected{border-color:var(--blue);background:var(--blt)}.qp-opt.selected .qp-opt-letter{background:var(--blue);color:#fff}
+.qp-opt.correct{border-color:var(--green);background:var(--glt)}.qp-opt.correct .qp-opt-letter{background:var(--green);color:#fff}
+.qp-opt.wrong{border-color:var(--red);background:var(--rlt)}.qp-opt.wrong .qp-opt-letter{background:var(--red);color:#fff}
+.qp-opt.disabled{pointer-events:none}
+.qp-feedback{padding:10px 13px;border-radius:var(--r8);font-size:12px;font-weight:600;margin-top:12px;display:none}
+.qp-feedback.show{display:block}
+.fb-correct{background:var(--glt);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+.fb-wrong{background:var(--rlt);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+.qp-nav{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.qp-btn{padding:9px 20px;border-radius:var(--r8);font-size:13px;font-weight:700;transition:.18s}
+.qp-btn-p{background:var(--gb);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.25)}
+.qp-btn-s{background:var(--bg);color:var(--ink2);border:1.5px solid var(--border)}
+/* Result */
+.qp-result{padding:28px 16px;text-align:center}
+.qr-emoji{font-size:52px;margin-bottom:12px}
+.qr-score{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;margin-bottom:4px}
+.qr-total{font-size:13px;color:var(--ink3);margin-bottom:16px}
+.qr-bar-wrap{background:var(--bg2);border-radius:var(--r99);height:10px;overflow:hidden;margin-bottom:20px}
+.qr-bar{height:100%;border-radius:var(--r99);background:var(--gb);transition:.8s}
+.qr-msg{font-size:14px;font-weight:700;margin-bottom:20px}
+
+/* ─── NOTICES ─── */
+.notice-item{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px;margin-bottom:10px;border-left:3px solid var(--blue)}
+.notice-item.imp{border-left-color:var(--yellow);background:var(--ylt)}
+.ni-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.ni-desc{font-size:12px;color:var(--ink2);line-height:1.55}
+.ni-date{font-size:10px;color:var(--ink3);margin-top:6px}
+
+/* ─── FULLSCREEN ─── */
+.fs-ov{position:fixed;inset:0;z-index:1000;background:#0f172a;display:none;flex-direction:column}
+.fs-ov.show{display:flex}
+.fs-tb{padding:12px 16px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+.fs-tb-title{font-size:13px;font-weight:700;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-tabs{display:flex;gap:2px;padding:3px;background:rgba(255,255,255,.06);border-radius:var(--r8)}
+.fs-rtab{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);transition:.15s}
+.fs-rtab.on{background:rgba(255,255,255,.1);color:#fff}
+.fs-close{padding:5px 13px;border-radius:var(--r8);background:rgba(255,255,255,.07);color:rgba(255,255,255,.6);font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.1)}
+.fs-body{flex:1;overflow-y:auto;padding:24px 16px}
+@media(min-width:768px){.fs-body{padding:32px 40px;max-width:860px;margin:0 auto;width:100%}}
+.fs-body .nr h1{color:#e2e8f0}.fs-body .nr h2{color:#93c5fd}.fs-body .nr p,.fs-body .nr li{color:#94a3b8}
+.fs-body .nr th{background:rgba(255,255,255,.05);color:#e2e8f0;border-color:rgba(255,255,255,.08)}
+.fs-body .nr td{color:#94a3b8;border-color:rgba(255,255,255,.06)}
+.fs-body .nr table{border-color:rgba(255,255,255,.08)}
+.fs-body .nr hr{border-color:rgba(255,255,255,.07)}
+.fs-body .tip-b{background:rgba(37,99,235,.15);border-color:var(--blue);color:#93c5fd}
+.fs-body .imp-b{background:rgba(217,119,6,.15);border-color:var(--yellow);color:#fcd34d}
+.fs-body .eg-b{background:rgba(22,163,74,.15);border-color:var(--green);color:#86efac}
+.fs-body .ppt-wrap{padding-bottom:56.25%}
+
+/* ─── EMPTY / TOAST ─── */
+.empty{padding:40px 16px;text-align:center;border:2px dashed var(--border);border-radius:var(--r16)}
+.empty-ico{font-size:28px;opacity:.2;margin-bottom:6px}
+.empty-t{font-size:13px;font-weight:700;color:var(--ink2)}
+.empty-s{font-size:11px;color:var(--ink3);margin-top:2px}
+.toast{position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));right:14px;z-index:9999;padding:9px 16px;border-radius:var(--r8);font-size:11px;font-weight:700;box-shadow:var(--sh-lg);display:none;align-items:center;gap:6px}
+@media(min-width:768px){.toast{bottom:20px;right:20px;font-size:12px}}
+.toast.show{display:flex;animation:tin .25s ease}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.t-ok{background:var(--glt);color:#14532d;border:1px solid #bbf7d0}
+.t-err{background:var(--rlt);color:#7f1d1d;border:1px solid #fecaca}
+.t-info{background:var(--blt);color:var(--bdk);border:1px solid #bfdbfe}
+
+/* ─── LANDING PAGE SECTIONS ─── */
+.lp-section{padding:48px 16px}
+@media(min-width:768px){.lp-section{padding:64px 24px}}
+.lp-wrap{max-width:1100px;margin:0 auto}
+.lp-badge{display:inline-block;padding:6px 14px;background:var(--blt);color:var(--blue);font-size:10px;font-weight:700;border-radius:var(--r99);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.section-badge-lg{display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);color:#fff;font-size:18px;font-weight:800;border-radius:var(--r99);text-transform:uppercase;letter-spacing:1px;box-shadow:0 8px 24px rgba(37,99,235,.35)}
+@media(min-width:768px){.section-badge-lg{padding:16px 48px;font-size:22px;letter-spacing:1.5px}}
+.lp-title{font-size:24px;font-weight:800;color:var(--ink);line-height:1.3;margin-bottom:10px}
+@media(min-width:768px){.lp-title{font-size:32px}}
+.lp-sub{font-size:13px;color:var(--ink2);line-height:1.7;max-width:600px}
+@media(min-width:768px){.lp-sub{font-size:15px}}
+
+/* COURSES OFFERED */
+.courses-offered{background:linear-gradient(180deg,#f8fafc 0%,#fff 100%)}
+.courses-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:28px}
+@media(min-width:600px){.courses-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1000px){.courses-grid{grid-template-columns:repeat(3,1fr);gap:20px}}
+.course-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r16);padding:20px;transition:.25s;position:relative}
+.course-card:hover{border-color:var(--blue);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.1)}
+.cc-ico{width:44px;height:44px;border-radius:var(--r12);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+.cc-ico-blue{background:#eff6ff;color:#2563eb}
+.cc-ico-green{background:#f0fdf4;color:#16a34a}
+.cc-ico-purple{background:#faf5ff;color:#9333ea}
+.cc-ico-orange{background:#fff7ed;color:#ea580c}
+.cc-ico-pink{background:#fdf2f8;color:#db2777}
+.cc-ico-cyan{background:#ecfeff;color:#0891b2}
+.cc-ico-yellow{background:#fefce8;color:#ca8a04}
+.cc-name{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:6px}
+.cc-desc{font-size:12px;color:var(--ink2);line-height:1.5;margin-bottom:12px;min-height:36px}
+.cc-duration{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3);margin-bottom:10px}
+.cc-duration svg{width:14px;height:14px;opacity:.6}
+.cc-badge{display:inline-block;padding:4px 10px;border-radius:var(--r99);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.cc-badge-popular{background:#dbeafe;color:#1d4ed8}
+.cc-badge-job{background:#dcfce7;color:#166534}
+.cc-badge-beginner{background:#fef3c7;color:#92400e}
+.cc-badge-fast{background:#ede9fe;color:#6d28d9}
+.cc-badge-trending{background:#fce7f3;color:#be185d}
+.cc-badge-exam{background:#e0f2fe;color:#0369a1}
+
+/* ABOUT SECTION */
+.about-sec{background:#0f172a;color:#fff}
+.about-grid{display:grid;gap:32px;margin-top:32px}
+@media(min-width:768px){.about-grid{grid-template-columns:auto 1fr;gap:48px;align-items:center}}
+.about-photo-wrap{display:flex;justify-content:center}
+.about-photo{position:relative;width:180px;height:180px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px rgba(59,130,246,.3),0 20px 50px rgba(0,0,0,.4);animation:float 4s ease-in-out infinite}
+@media(min-width:768px){.about-photo{width:220px;height:220px}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+.about-photo img{width:100%;height:100%;object-fit:cover}
+.about-photo-placeholder{font-size:64px;color:rgba(255,255,255,.4)}
+.about-photo::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6,#ec4899,#3b82f6);z-index:-1;animation:spin 8s linear infinite}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.about-content{}
+.about-exp{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.3);border-radius:var(--r99);margin-bottom:16px}
+.about-exp-n{font-size:28px;font-weight:800;color:#60a5fa}
+.about-exp-t{font-size:12px;color:rgba(255,255,255,.7);line-height:1.3}
+.about-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:12px}
+@media(min-width:768px){.about-title{font-size:30px}}
+.about-desc{font-size:13px;color:rgba(255,255,255,.7);line-height:1.8;margin-bottom:20px}
+@media(min-width:768px){.about-desc{font-size:14px}}
+.about-points{list-style:none;margin-bottom:24px}
+.about-points li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(255,255,255,.8);margin-bottom:10px}
+.about-points li::before{content:'✓';color:#22c55e;font-weight:700;flex-shrink:0}
+
+/* WHY CHOOSE */
+.why-sec{background:#fff}
+.why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:28px}
+@media(min-width:768px){.why-grid{grid-template-columns:repeat(4,1fr);gap:20px}}
+.why-card{background:var(--bg);border-radius:var(--r16);padding:20px 16px;text-align:center;transition:.2s}
+.why-card:hover{transform:translateY(-4px);box-shadow:var(--sh)}
+.why-ico{width:48px;height:48px;border-radius:var(--r12);background:var(--gb);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;box-shadow:0 4px 12px rgba(37,99,235,.25)}
+.why-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.why-desc{font-size:11px;color:var(--ink3);line-height:1.5}
+
+/* CONTACT FORM CTA */
+.contact-cta{background:linear-gradient(135deg,#166534 0%,#15803d 100%)}
+.contact-cta .lp-title{color:#fff;text-align:center}
+.contact-cta .lp-sub{color:rgba(255,255,255,.8);text-align:center;margin:0 auto 28px}
+.contact-form{max-width:480px;margin:0 auto;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:var(--r20);padding:24px;border:1px solid rgba(255,255,255,.15)}
+.cf-row{margin-bottom:14px}
+.cf-row:last-child{margin-bottom:0}
+.cf-label{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.7);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.cf-input{width:100%;padding:14px 16px;background:rgba(255,255,255,.95);border:2px solid transparent;border-radius:var(--r12);font-size:14px;color:#1e293b;transition:.2s}
+.cf-input:focus{outline:none;border-color:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.2)}
+.cf-input::placeholder{color:#94a3b8}
+.cf-textarea{min-height:100px;resize:vertical;font-family:inherit}
+.cf-submit{width:100%;padding:16px 24px;background:#fff;color:#166534;font-size:15px;font-weight:700;border:none;border-radius:var(--r12);cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px}
+.cf-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.cf-submit svg{width:22px;height:22px}
+
+/* FOOTER */
+  .footer{background:#0f172a;padding:20px 16px;text-align:center;border-top:1px solid rgba(255,255,255,.08)}
+  .footer-copy{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px}
+  .footer-dev{font-size:11px;color:rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;gap:5px}
+  .footer-dev-name{color:#60a5fa;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-in">
+    <a class="nav-brand" href="#" onclick="goHome()">
+      <div class="nav-mark">🎓</div>
+      <div class="nav-name">Sonu Sir's Classes</div>
+    </a>
+    <!-- Desktop Nav Tabs -->
+    <div class="nav-tabs" id="navTabs">
+      <div class="nav-tab" onclick="openCustomPage('services')">Services<span class="nav-tab-arrow">▼</span>
+        <div class="nav-dropdown" id="ddServices"></div>
+      </div>
+      <div class="nav-tab" onclick="openCustomPage('about')">About<span class="nav-tab-arrow">▼</span>
+        <div class="nav-dropdown" id="ddAbout"></div>
+      </div>
+      <div class="nav-tab" onclick="openCustomPage('other')">Other<span class="nav-tab-arrow">▼</span>
+        <div class="nav-dropdown" id="ddOther"></div>
+      </div>
+    </div>
+    <div class="nav-bc" id="navBc"></div>
+    <div class="nav-r" id="navR">
+      <button class="mobile-tabs-btn" onclick="toggleMobileTabs()">Menu ▼</button>
+      <button class="nbtn nbtn-g" onclick="showView('vLogin')">Login</button>
+      <a href="admin.html" class="nbtn nbtn-s">Admin</a>
+    </div>
+  </div>
+</nav>
+<!-- Mobile Tabs Menu -->
+<div class="mobile-tabs-menu" id="mobileTabsMenu">
+  <div class="mobile-tab-section">
+    <div class="mobile-tab-title">Services</div>
+    <div id="mobileServices"></div>
+  </div>
+  <div class="mobile-tab-section">
+    <div class="mobile-tab-title">About Me</div>
+    <div id="mobileAbout"></div>
+  </div>
+  <div class="mobile-tab-section">
+    <div class="mobile-tab-title">Other</div>
+    <div id="mobileOther"></div>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div id="vHome" class="view on">
+  <!-- HERO BANNER SLIDER -->
+  <div class="hero-banner" id="heroBanner">
+    <div class="hero-slider" id="heroSlider"></div>
+    <div class="hero-dots" id="heroDots"></div>
+    <div class="hero-arrows">
+      <button class="hero-arrow" onclick="prevSlide()">‹</button>
+      <button class="hero-arrow" onclick="nextSlide()">›</button>
+    </div>
+    <div class="hero-banner-default" id="heroDefault"><div class="hero-banner-default-ico">🎓</div></div>
+  </div>
+
+  <!-- ANNOUNCEMENTS -->
+  <div class="ann-bar" id="annBar" style="display:none">
+    <span class="ann-lbl">📢 Announcement</span>
+    <div class="ann-scroll"><div class="ann-inner" id="annTicker"></div></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stats-bar-in">
+      <div class="sb-stat"><div class="sb-n" id="stC">0</div><div class="sb-l">Courses</div></div>
+      <div class="sb-stat"><div class="sb-n" id="stM">0</div><div class="sb-l">Modules</div></div>
+      <div class="sb-stat"><div class="sb-n" id="stT">0</div><div class="sb-l">Topics</div></div>
+      <div class="sb-stat"><div class="sb-n" id="stS">0</div><div class="sb-l">Students</div></div>
+    </div>
+  </div>
+
+  <!-- COURSES -->
+  <div class="wrap">
+    <div class="sec-hd">📚 Courses</div>
+    <div class="sec-sub">Login karke apna course access karein</div>
+    <div class="courses-grid" id="homeCourses"></div>
+
+    <!-- PDF -->
+    <div id="homePDFSec" style="margin-top:28px;display:none">
+      <div class="sec-hd">PDF Library</div>
+      <div class="sec-sub">Study materials download karein</div>
+      <div class="pdf-grid" id="homePDFs"></div>
+    </div>
+  </div>
+
+  <!-- COURSES OFFERED SECTION -->
+  <section class="lp-section courses-offered">
+  <div class="lp-wrap">
+  <div style="text-align:center;margin-bottom:28px">
+    <div class="section-badge-lg">Our Courses</div>
+  </div>
+  <div class="courses-grid">
+        <!-- ADCA+ -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-blue"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+          <div class="cc-name">ADCA+</div>
+          <div class="cc-desc">Advanced Diploma - Office, Internet, basic programming</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>12 months</div>
+          <span class="cc-badge cc-badge-popular">Most Popular</span>
+        </div>
+        <!-- CFA -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-green"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+          <div class="cc-name">CFA</div>
+          <div class="cc-desc">Computer Financial Accounting - Tally, GST & billing</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>3 months</div>
+          <span class="cc-badge cc-badge-job">Job Ready</span>
+        </div>
+        <!-- DCA -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-blue"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+          <div class="cc-name">DCA</div>
+          <div class="cc-desc">Diploma in Computer Applications - beginner to intermediate</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>6 months</div>
+          <span class="cc-badge cc-badge-beginner">Beginner Friendly</span>
+        </div>
+        <!-- DOA -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-purple"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+          <div class="cc-name">DOA</div>
+          <div class="cc-desc">Diploma in Office Automation - MS Office, email & data entry</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>9 months</div>
+          <span class="cc-badge cc-badge-fast">Fast Track</span>
+        </div>
+        <!-- DTP -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-orange"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></div>
+          <div class="cc-name">DTP</div>
+          <div class="cc-desc">Desktop Publishing - CorelDRAW, PageMaker & print design</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>3 months</div>
+          <span class="cc-badge cc-badge-job">Job Ready</span>
+        </div>
+        <!-- BCC -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-cyan"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+          <div class="cc-name">BCC</div>
+          <div class="cc-desc">Basic Computer Course - absolute beginners ke liye perfect</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 months</div>
+          <span class="cc-badge cc-badge-beginner">Beginner Friendly</span>
+        </div>
+        <!-- Hindi/Eng Typing -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-blue"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M2 12h20M6 12v8M18 12v8M10 8h8"/></svg></div>
+          <div class="cc-name">Hindi / Eng Typing</div>
+          <div class="cc-desc">Speed typing - Govt exam & sarkari job ke liye</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>3 months</div>
+          <span class="cc-badge cc-badge-exam">Exam Prep</span>
+        </div>
+        <!-- Canva Pro -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-pink"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+          <div class="cc-name">Canva Pro</div>
+          <div class="cc-desc">Social media design, posters, thumbnails - freelance ke liye</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 months</div>
+          <span class="cc-badge cc-badge-trending">Trending</span>
+        </div>
+        <!-- AI Tools -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-purple"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2z"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg></div>
+          <div class="cc-name">AI Tools</div>
+          <div class="cc-desc">ChatGPT, Midjourney, AI writing - future skills</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>2 months</div>
+          <span class="cc-badge cc-badge-trending">Trending</span>
+        </div>
+        <!-- Tally Prime -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-green"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+          <div class="cc-name">Tally Prime</div>
+          <div class="cc-desc">Accounting software - GST, inventory & business management</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>3 months</div>
+          <span class="cc-badge cc-badge-job">Job Ready</span>
+        </div>
+        <!-- Graphic Design -->
+        <div class="course-card">
+          <div class="cc-ico cc-ico-orange"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 12c.7-.5 1.3-.8 2-1a2.5 2.5 0 010 5c-.7-.2-1.3-.5-2-1"/><path d="M7 12c-.7-.5-1.3-.8-2-1a2.5 2.5 0 000 5c.7-.2 1.3-.5 2-1"/><path d="M12 12v9"/><path d="M8 21h8"/></svg></div>
+          <div class="cc-name">Graphic Design</div>
+          <div class="cc-desc">Photoshop, Illustrator - professional design skills</div>
+          <div class="cc-duration"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>4 months</div>
+          <span class="cc-badge cc-badge-job">Job Ready</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section class="lp-section about-sec">
+    <div class="lp-wrap">
+      <div class="about-grid">
+        <div class="about-photo-wrap">
+          <div class="about-photo" id="aboutPhotoBox">
+            <span class="about-photo-placeholder" id="aboutPhotoPlaceholder">S</span>
+            <img id="aboutPhotoImg" src="" alt="Sonu Sir" style="display:none">
+          </div>
+        </div>
+        <div class="about-content">
+          <div class="about-exp">
+            <span class="about-exp-n">7+</span>
+            <span class="about-exp-t">Years<br>Experience</span>
+          </div>
+          <h2 class="about-title">Sonu Sir - Computer Educator</h2>
+          <p class="about-desc">Every student has the potential to succeed. With 7+ years of dedicated teaching experience, I believe in transforming lives through quality computer education. My mission is simple: to give you the skills that open doors to real opportunities.</p>
+          <ul class="about-points">
+            <li>Practical, hands-on training that prepares you for real jobs</li>
+            <li>From basic computer skills to advanced software mastery</li>
+            <li>Personalized attention to help every student succeed</li>
+            <li>Industry-relevant courses updated with latest technology</li>
+            <li>Trusted by hundreds of students over the years</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY CHOOSE US -->
+  <section class="lp-section why-sec">
+    <div class="lp-wrap">
+      <div style="text-align:center;margin-bottom:12px">
+        <span class="lp-badge">Why Choose Us</span>
+        <h2 class="lp-title">Hum Kyu Best Hain?</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-ico">📚</div>
+          <div class="why-title">Updated Syllabus</div>
+          <div class="why-desc">Latest industry standards ke according</div>
+        </div>
+        <div class="why-card">
+          <div class="why-ico">💻</div>
+          <div class="why-title">Practical Training</div>
+          <div class="why-desc">Hands-on practice with real projects</div>
+        </div>
+        <div class="why-card">
+          <div class="why-ico">🎯</div>
+          <div class="why-title">Job Ready Skills</div>
+          <div class="why-desc">Employment focused education</div>
+        </div>
+        <div class="why-card">
+          <div class="why-ico">🏆</div>
+          <div class="why-title">Certificate</div>
+          <div class="why-desc">Government recognized certificates</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- CONTACT FORM CTA -->
+  <section class="lp-section contact-cta">
+  <div class="lp-wrap">
+  <div style="text-align:center;margin-bottom:28px">
+    <div class="section-badge-lg">Contact Us</div>
+  </div>
+      <div class="contact-form">
+        <div class="cf-row">
+          <label class="cf-label">Full Name</label>
+          <input type="text" class="cf-input" id="cfName" placeholder="Apna naam likhein">
+        </div>
+        <div class="cf-row">
+          <label class="cf-label">Email ID</label>
+          <input type="email" class="cf-input" id="cfEmail" placeholder="example@email.com">
+        </div>
+        <div class="cf-row">
+          <label class="cf-label">Your Message</label>
+          <textarea class="cf-input cf-textarea" id="cfMsg" placeholder="Apna sawal ya feedback yahan likhein..."></textarea>
+        </div>
+        <button class="cf-submit" onclick="sendWhatsAppMsg()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Send via WhatsApp
+        </button>
+      </div>
+    </div>
+  </section>
+
+<!-- FOOTER -->
+  <footer class="footer">
+  <div class="footer-copy">© 2026 Sonu Sir's Classes. All rights reserved.</div>
+  <div class="footer-dev">
+  Developed with care by <span class="footer-dev-name">Sonu Sir</span>
+  </div>
+  </footer>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="vLogin" class="view">
+  <div class="login-page">
+    <div class="login-bg-grad"></div><div class="login-dots"></div>
+    <div class="login-box">
+      <div class="login-brand">
+        <div class="login-ico">🎓</div>
+        <div class="login-title">Sonu Sir's Classes</div>
+        <div class="login-sub">Apna role chunke login karein</div>
+      </div>
+      <div class="role-tabs">
+        <div class="role-tab on" onclick="setRole('student',this)">👨‍🎓 Student</div>
+        <div class="role-tab" onclick="setRole('staff',this)">👨‍🏫 Staff</div>
+      </div>
+      <div class="login-card">
+        <div class="login-err" id="loginErr">❌ Email ya Password galat hai!</div>
+        <div class="lf"><label>Email ID</label><input type="email" id="lEmail" placeholder="Enter your email id" inputmode="email" autocomplete="email"></div>
+        <div class="lf"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="login-btn" onclick="doLogin()">Login करें →</button>
+        <button class="login-back" onclick="goHome()">← Wapas jayein</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STUDENT DASHBOARD ═══ -->
+<div id="vStudent" class="view">
+  <div class="dash-wrap">
+    <!-- Desktop Sidebar -->
+    <aside class="dash-sb" id="stuSB">
+      <div class="ds-user">
+        <div class="ds-av" id="stuAv">S</div>
+        <div class="ds-nm" id="stuNm">Student</div>
+        <div class="ds-role">Student</div>
+        <div class="ds-batch" id="stuBatch">—</div>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-lbl">Menu</div>
+        <button class="sb-btn on" onclick="stuNav('dHome',this)"><span class="sb-ico">🏠</span>Dashboard</button>
+        <button class="sb-btn" onclick="stuNav('dCourse',this)"><span class="sb-ico">📚</span>My Course</button>
+        <button class="sb-btn" onclick="stuNav('dQuiz',this)"><span class="sb-ico">📝</span>Quiz</button>
+        <button class="sb-btn" onclick="stuNav('dPDF',this)"><span class="sb-ico">📄</span>PDF Library</button>
+        <button class="sb-btn" onclick="stuNav('dNotice',this)"><span class="sb-ico">📢</span>Notices</button>
+      </div>
+      <div style="padding:12px;border-top:1px solid var(--border);margin-top:auto">
+        <button class="nbtn nbtn-r" style="width:100%;justify-content:center" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+    <!-- Main Content -->
+    <div class="dash-main">
+      <div class="d-content">
+        <div class="d-panel on" id="dHome">
+          <div class="d-welcome">
+            <div class="d-welcome-bg"></div>
+            <h2 id="stuWelcomeH">Namaste! 👋</h2>
+            <p id="stuWelcomeP">Aapka course shuru karein</p>
+          </div>
+          <div class="d-grid" id="stuStats"></div>
+          <div id="stuNoticeSnip"></div>
+        </div>
+        <div class="d-panel" id="dCourse"><div id="stuCourseContent"></div></div>
+        <div class="d-panel" id="dQuiz"><div id="stuQuizContent"></div></div>
+        <div class="d-panel" id="dPDF"><div class="sec-hd" style="font-size:15px;margin-bottom:14px">📄 PDF Library</div><div class="pdf-grid" id="stuPDFs"></div></div>
+        <div class="d-panel" id="dNotice"><div class="sec-hd" style="font-size:15px;margin-bottom:14px">📢 Notices</div><div id="stuNotices"></div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Mobile bottom nav -->
+  <div class="bottom-nav">
+    <button class="bn-item on" id="bn0" onclick="stuNav('dHome',null,0)"><div class="bn-ico">🏠</div><div class="bn-lbl">Home</div></button>
+    <button class="bn-item" id="bn1" onclick="stuNav('dCourse',null,1)"><div class="bn-ico">📚</div><div class="bn-lbl">Course</div></button>
+    <button class="bn-item" id="bn2" onclick="stuNav('dQuiz',null,2)"><div class="bn-ico">📝</div><div class="bn-lbl">Quiz</div></button>
+    <button class="bn-item" id="bn3" onclick="stuNav('dPDF',null,3)"><div class="bn-ico">📄</div><div class="bn-lbl">PDF</div></button>
+    <button class="bn-item" id="bn4" onclick="stuNav('dNotice',null,4)"><div class="bn-ico">📢</div><div class="bn-lbl">Notice</div></button>
+  </div>
+</div>
+
+<!-- ═══ STAFF DASHBOARD ═══ -->
+<div id="vStaff" class="view">
+  <div class="dash-wrap">
+    <aside class="dash-sb" id="staffSB">
+      <div class="ds-user">
+        <div class="ds-av" style="background:linear-gradient(135deg,#16a34a,#15803d)" id="staffAv">T</div>
+        <div class="ds-nm" id="staffNm">Staff</div>
+        <div class="ds-role">Staff / Teacher</div>
+      </div>
+      <div class="sb-nav">
+        <div class="sb-lbl">Menu</div>
+        <button class="sb-btn on" onclick="staffNav('sfHome',this)"><span class="sb-ico">🏠</span>Dashboard</button>
+        <button class="sb-btn" onclick="staffNav('sfCourses',this)"><span class="sb-ico">📚</span>All Courses</button>
+        <button class="sb-btn" onclick="staffNav('sfPDF',this)"><span class="sb-ico">📄</span>PDF Library</button>
+        <button class="sb-btn" onclick="staffNav('sfNotice',this)"><span class="sb-ico">📢</span>Notices</button>
+      </div>
+      <div style="padding:12px;border-top:1px solid var(--border);margin-top:auto">
+        <button class="nbtn nbtn-r" style="width:100%;justify-content:center" onclick="logout()">🚪 Logout</button>
+      </div>
+    </aside>
+    <div class="dash-main">
+      <div class="d-content">
+        <div class="d-panel on" id="sfHome">
+          <div class="d-welcome" style="background:linear-gradient(135deg,#16a34a,#15803d)">
+            <div class="d-welcome-bg"></div>
+            <h2 id="staffWelcomeH">Namaste Teacher! 👨‍🏫</h2>
+            <p>Sabhi courses access karein</p>
+          </div>
+          <div class="d-grid" id="staffStats"></div>
+        </div>
+        <div class="d-panel" id="sfCourses"><div id="staffCourseContent"></div></div>
+        <div class="d-panel" id="sfPDF"><div class="sec-hd" style="font-size:15px;margin-bottom:14px">📄 PDF Library</div><div class="pdf-grid" id="staffPDFs"></div></div>
+        <div class="d-panel" id="sfNotice"><div class="sec-hd" style="font-size:15px;margin-bottom:14px">📢 Notices</div><div id="staffNotices"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="bn-item on" id="sfbn0" onclick="staffNav('sfHome',null,0)"><div class="bn-ico">🏠</div><div class="bn-lbl">Home</div></button>
+    <button class="bn-item" id="sfbn1" onclick="staffNav('sfCourses',null,1)"><div class="bn-ico">📚</div><div class="bn-lbl">Courses</div></button>
+    <button class="bn-item" id="sfbn2" onclick="staffNav('sfPDF',null,2)"><div class="bn-ico">📄</div><div class="bn-lbl">PDF</div></button>
+    <button class="bn-item" id="sfbn3" onclick="staffNav('sfNotice',null,3)"><div class="bn-ico">📢</div><div class="bn-lbl">Notice</div></button>
+    <button class="bn-item" id="sfbn4" onclick="logout()"><div class="bn-ico">🚪</div><div class="bn-lbl">Logout</div></button>
+  </div>
+</div>
+
+<!-- ═══ READER ═══ -->
+  <div id="vReader" class="view">
+  <div class="reader-wrap">
+    <aside class="reader-sb" id="readerSB">
+      <div class="rsb-title">📋 Chapters</div>
+      <div id="readerSBList"></div>
+    </aside>
+    <div class="reader-main">
+      <div class="reader-tb">
+        <div class="r-title" id="rTitle"></div>
+<div class="r-tabs" id="readerTabs">
+  <button class="rtab on" onclick="switchRTab('notes',this)">Notes</button>
+  <button class="rtab" onclick="switchRTab('ppt',this)" id="pptTabBtn" style="display:none">PPT</button>
+  </div>
+        <div class="r-navs">
+          <button class="rnb" onclick="prevTopic()">‹</button>
+          <button class="rnb" onclick="nextTopic()">›</button>
+        </div>
+        <button class="fs-btn" onclick="openFS()">⛶</button>
+      </div>
+      <div class="reader-body">
+        <div class="tab-pane on" id="tpNotes"><div class="nr" id="notesRender"></div></div>
+        <div class="tab-pane" id="tpPPT"><div id="pptRender"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ QUIZ PLAYER ═══ -->
+<div id="vQuizPlayer" class="view">
+  <div style="margin-top:var(--nav-h);padding:16px 16px 100px;max-width:700px;margin-left:auto;margin-right:auto">
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px">
+      <button onclick="exitQuiz()" style="padding:7px 14px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);font-size:12px;font-weight:700;border:1.5px solid var(--border)">Back</button>
+      <div style="font-size:13px;font-weight:700;color:var(--ink2)" id="qpBc"></div>
+    </div>
+    <div class="quiz-player" id="quizPlayer"></div>
+  </div>
+</div>
+
+<!-- ═══ CUSTOM PAGE ═══ -->
+<div id="vCustomPage" class="view">
+  <div style="margin-top:var(--nav-h);padding:16px 16px 100px;max-width:1000px;margin-left:auto;margin-right:auto">
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px">
+      <button onclick="goHome()" style="padding:7px 14px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);font-size:12px;font-weight:700;border:1.5px solid var(--border)">Back to Home</button>
+      <div style="font-size:13px;font-weight:700;color:var(--ink2)" id="cpBc"></div>
+    </div>
+    <!-- Simple HTML content container -->
+    <div id="customPageContent" style="background:var(--surf);border-radius:var(--r16);padding:20px;border:1px solid var(--border);display:none"></div>
+    <!-- Full HTML document iframe -->
+    <iframe id="customPageFrame" style="width:100%;border:none;border-radius:var(--r16);background:#fff;display:none;min-height:80vh"></iframe>
+  </div>
+</div>
+
+<!-- FULLSCREEN -->
+<div class="fs-ov" id="fsOv">
+  <div class="fs-tb">
+    <div class="fs-tb-title" id="fsTitle"></div>
+<div class="fs-tabs" id="fsTabs">
+  <button class="fs-rtab on" onclick="switchFSTab('notes',this)">Notes</button>
+  <button class="fs-rtab" onclick="switchFSTab('ppt',this)" id="fsPptTabBtn" style="display:none">PPT</button>
+  </div>
+    <button class="fs-close" onclick="closeFS()">✕</button>
+  </div>
+  <div class="fs-body" id="fsBody"></div>
+</div>
+
+<div class="toast" id="tst"></div>
+  
+  <!-- Global Back Button -->
+  <button class="back-btn-float" onclick="goBackOrHome()">Back</button>
+  
+<script>
+  /* ════ FIREBASE CONFIG ════ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyBHmqh8J9ZhfXAMOvEeSO_kOlMLnIuCQDs",
+    authDomain: "sonu-sirs-classes.firebaseapp.com",
+    projectId: "sonu-sirs-classes",
+    storageBucket: "sonu-sirs-classes.firebasestorage.app",
+    messagingSenderId: "180668455966",
+    appId: "1:180668455966:web:22e7951ede102938d9220f"
+  };
+  
+  // Initialize Firebase
+  let db;
+  let firebaseReady = false;
+  
+  try {
+    if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      firebaseReady = true;
+      console.log("[v0] Firebase connected successfully!");
+    } else {
+      console.log("[v0] Firebase not configured - using localStorage fallback");
+    }
+  } catch(e) {
+    console.log("[v0] Firebase init error, using localStorage:", e);
+  }
+  
+  /* ════ STORE ════ */
+  const K={c:'courses',m:'modules',t:'topics',users:'users',batches:'batches',slides:'slides',pdfs:'pdfs',notices:'notices',announcements:'announcements',quizSecs:'quizSecs',quizChs:'quizChs',scores:'scores',customPages:'customPages',siteSettings:'siteSettings'};
+  
+  // LocalStorage fallback functions
+  const ldLocal=k=>JSON.parse(localStorage.getItem('ssc_'+k)||'[]');
+  const svLocal=(k,v)=>localStorage.setItem('ssc_'+k,JSON.stringify(v));
+  
+  // Firebase load function
+  async function ldFirebase(collection) {
+    if(!firebaseReady) return ldLocal(collection);
+    try {
+      const snapshot = await db.collection(collection).get();
+      const data = [];
+      snapshot.forEach(doc => data.push({...doc.data(), _docId: doc.id}));
+      return data;
+    } catch(e) {
+      console.log("[v0] Firebase load error:", e);
+      return ldLocal(collection);
+    }
+  }
+  
+  // Firebase save function (saves entire array)
+  async function svFirebase(collection, dataArray) {
+    svLocal(collection, dataArray); // Always save to localStorage as backup
+    if(!firebaseReady) return;
+    try {
+      const batch = db.batch();
+      // Clear existing and add new
+      const existing = await db.collection(collection).get();
+      existing.forEach(doc => batch.delete(doc.ref));
+      dataArray.forEach(item => {
+        const docRef = db.collection(collection).doc(item.id || item._docId || db.collection(collection).doc().id);
+        const cleanItem = {...item};
+        delete cleanItem._docId;
+        batch.set(docRef, cleanItem);
+      });
+      await batch.commit();
+    } catch(e) {
+      console.log("[v0] Firebase save error:", e);
+    }
+  }
+  
+  // Wrapper functions for compatibility
+  const ld = k => ldLocal(k); // Sync load from localStorage (for initial)
+  const sv = (k,v) => svFirebase(k,v); // Async save to Firebase
+  
+  let C,M,T,U,B,PDFs,Notices,Announcements,QSecs,QChs,Scores,Slides,CustomPages;
+  let currentSlide=0,slideInterval=null;
+  
+  // Initial sync load from localStorage
+  function ra(){C=ldLocal(K.c);M=ldLocal(K.m);T=ldLocal(K.t);U=ldLocal(K.users);B=ldLocal(K.batches);PDFs=ldLocal(K.pdfs);Notices=ldLocal(K.notices);Announcements=ldLocal(K.announcements);QSecs=ldLocal(K.quizSecs);QChs=ldLocal(K.quizChs);Scores=ldLocal(K.scores);Slides=ldLocal(K.slides);CustomPages=ldLocal(K.customPages)}
+  
+  // Async reload from Firebase
+  async function raFirebase(){
+    if(!firebaseReady) { ra(); return; }
+    try {
+      [C,M,T,U,B,PDFs,Notices,Announcements,QSecs,QChs,Scores,Slides,CustomPages] = await Promise.all([
+        ldFirebase(K.c), ldFirebase(K.m), ldFirebase(K.t), ldFirebase(K.users), ldFirebase(K.batches),
+        ldFirebase(K.pdfs), ldFirebase(K.notices), ldFirebase(K.announcements), ldFirebase(K.quizSecs),
+        ldFirebase(K.quizChs), ldFirebase(K.scores), ldFirebase(K.slides), ldFirebase(K.customPages)
+      ]);
+      // Also save to localStorage for offline support
+      svLocal(K.c,C);svLocal(K.m,M);svLocal(K.t,T);svLocal(K.users,U);svLocal(K.batches,B);
+      svLocal(K.pdfs,PDFs);svLocal(K.notices,Notices);svLocal(K.announcements,Announcements);
+      svLocal(K.quizSecs,QSecs);svLocal(K.quizChs,QChs);svLocal(K.scores,Scores);svLocal(K.slides,Slides);svLocal(K.customPages,CustomPages);
+      console.log("[v0] Data synced from Firebase");
+    } catch(e) {
+      console.log("[v0] Firebase sync error:", e);
+      ra();
+    }
+  }
+
+/* SEED */
+function seed(){
+  if(!ld(K.c).length){
+    sv(K.c,[{id:'c1',name:'Bihar IT Certificate',ico:'🖥️',desc:'Bihar State Certificate in IT — KYP Program',clr:'#2563eb',bg:'#eff6ff',thumb:''}]);
+    sv(K.m,[
+      {id:'m1',cId:'c1',name:'Module 1: Introduction',ico:'🎯',desc:'KYP basics',clr:'#6366f1',bg:'#ede9fe'},
+      {id:'m2',cId:'c1',name:'Module 2: Computer Fundamentals',ico:'💻',desc:'Computer basics',clr:'#2563eb',bg:'#eff6ff'},
+      {id:'m3',cId:'c1',name:'Module 3: MS Office',ico:'📄',desc:'Word, Excel, PPT',clr:'#16a34a',bg:'#f0fdf4'},
+    ]);
+    sv(K.t,[
+      {id:'t1',mId:'m1',name:'KYP Introduction',emoji:'📖',notes:`# KYP का परिचय\n\nKYP = **Know Your Product** — Bihar सरकार की योजना।\n\n## उद्देश्य\n\n- Digital literacy\n- रोज़गार\n\n�� यह course मुफ्त है!\n\n| विवरण | ज��नकारी |\n|---|---|\n| अवधि | 3 माह |\n| Fees | निःशुल्क |`,pptLink:'https://www.canva.com/design/DAG360VDimA/7mcuGn-uI_tR3b--BkQ0LA/view'},
+      {id:'t2',mId:'m1',name:'Introduction Myself',emoji:'👤',notes:`# अपना परिचय\n\nनमस्ते, मेरा नाम **[नाम]** है।\n\n💡 आत्मविश्वास से बोलें!\n\n⭐ English में भी practice करें।`,pptLink:''},
+      {id:'t3',mId:'m2',name:'Computer का परिचय',emoji:'🖥️',notes:`# Computer क्या है?\n\nComputer एक **इलेक्ट्रॉनिक मशीन** है।\n\n| Step | Example |\n|---|---|\n| Input | Keyboard |\n| Process | CPU |\n| Output | Monitor |`,pptLink:'https://www.canva.com/design/DAG4zdjdOko/QtGfaLCqhqZ67k9bs0hAmw/view'},
+      {id:'t4',mId:'m2',name:'नंबर सिस्टम',emoji:'🔢',notes:`# Number System\n\n| System | Base |\n|---|---|\n| Decimal | 10 |\n| Binary | 2 |\n\n💡 Computer **Binary** में काम करता है!`,pptLink:''},
+      {id:'t5',mId:'m3',name:'MS Word',emoji:'📝',notes:`# MS Word\n\n| Shortcut | काम |\n|---|---|\n| Ctrl+B | Bold |\n| Ctrl+S | Save |\n\n💡 Extension: **.docx**`,pptLink:''},
+    ]);
+  }
+  if(!ld(K.users).length){
+    sv(K.users,[
+      {id:'u1',name:'Demo Student',email:'student@kyp.com',pass:'student123',role:'student',batchId:'b1'},
+      {id:'u2',name:'Demo Teacher',email:'staff@kyp.com',pass:'staff123',role:'staff',batchId:null},
+    ]);
+  }
+  if(!ld(K.batches).length){
+    sv(K.batches,[{id:'b1',name:'Batch 2025-A',courseId:'c1',unlockedTopics:['t1','t2','t3'],desc:'Morning Batch'}]);
+  }
+  if(!ld(K.quizSecs).length){
+    sv(K.quizSecs,[{id:'qs1',cId:'c1',name:'Computer Fundamentals Quiz',order:1}]);
+    sv(K.quizChs,[{id:'qc1',secId:'qs1',name:'Chapter 1: Introduction Quiz',order:1,htmlCode:`<div style="padding:16px;background:#f0fdf4;border-radius:12px;border:2px solid #16a34a;text-align:center"><p style="font-size:14px;font-weight:700;color:#14532d;margin-bottom:8px">✅ Sample Quiz</p><p style="font-size:12px;color:#16a34a">Admin se actual quiz code paste karwayein</p></div>`}]);
+  }
+  // Seed default slides/banners
+  if(!ld(K.slides).length){
+    sv(K.slides,[
+      {id:'sl1',title:'Bihar IT Certificate Course',subtitle:'KYP Program ke tahat free computer training - Sonu Sir ke saath seekhein',badge:'New Batch Starting',btnPrimary:'Course देखें',btnSec:'Login क��ें',order:1,bg:''},
+      {id:'sl2',title:'Computer Fundamentals',subtitle:'Computer ki basic se advanced knowledge - MS Office, Internet, Typing',badge:'Most Popular',btnPrimary:'Enroll Now',btnSec:'',order:2,bg:''},
+      {id:'sl3',title:'100% Job Placement Support',subtitle:'Certificate ke baad job assistance aur interview preparation',badge:'Career Growth',btnPrimary:'Join Today',btnSec:'Contact Us',order:3,bg:''},
+      {id:'sl4',title:'Expert Faculty',subtitle:'Experienced teachers se personalized guidance',badge:'Quality Education',btnPrimary:'Meet Teachers',btnSec:'',order:4,bg:''},
+      {id:'sl5',title:'Flexible Timing',subtitle:'Morning aur Evening batches available - Apni suvidha ke anusaar',badge:'Convenient',btnPrimary:'View Schedule',btnSec:'',order:5,bg:''},
+      {id:'sl6',title:'Free Study Materials',subtitle:'PDF notes, video lectures aur practice tests - Sab kuchh free!',badge:'Free Resources',btnPrimary:'Download Now',btnSec:'',order:6,bg:''}
+    ]);
+  }
+  // Seed default announcements
+  if(!ld(K.announcements).length){
+    sv(K.announcements,[
+      {id:'ann1',text:'🎉 New Batch Starting from 15 January 2025 - Jaldi Registration Karwayein!'},
+      {id:'ann2',text:'📚 Free PDF Notes Available - Download Section mein dekhein'},
+      {id:'ann3',text:'🏆 Last Batch Result: 95% Students Passed with Distinction'}
+    ]);
+  }
+  ra();
+}
+seed();
+
+/* ════ VIEWS ════ */
+let currentUser=null,fromView='vStudent';
+let activeTopicId=null,readerTopics=[];
+let activeQuizCh=null;
+let navHistory=[];
+
+function showView(id,skipHistory=false){
+  if(!skipHistory){
+    const currentView=document.querySelector('.view.on');
+    if(currentView&&currentView.id&&currentView.id!==id){
+      navHistory.push(currentView.id);
+      if(navHistory.length>20)navHistory.shift();
+    }
+  }
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+  updateBackBtnVisibility();
+}
+function updateBackBtnVisibility(){
+  const backBtn=document.querySelector('.back-btn-float');
+  if(backBtn)backBtn.style.display=navHistory.length>0?'flex':'none';
+}
+function goHome(){navHistory=[];showView('vHome',true);renderHome();setNavR(false);setBc([]);loadAboutPhoto()}
+function goBackOrHome(){
+  if(navHistory.length>0){
+    const prevView=navHistory.pop();
+    showView(prevView,true);
+    updateBackBtnVisibility();
+  }else{
+    goHome();
+  }
+}
+
+/* Contact Form WhatsApp */
+function sendWhatsAppMsg(){
+  const name=document.getElementById('cfName').value.trim();
+  const email=document.getElementById('cfEmail').value.trim();
+  const msg=document.getElementById('cfMsg').value.trim();
+  if(!name){toast('Please enter your name','err');return}
+  if(!msg){toast('Please enter your message','err');return}
+  const text=`Hello Sonu Sir,\n\nName: ${name}\nEmail: ${email||'Not provided'}\n\nMessage: ${msg}`;
+  const url=`https://wa.me/919661844576?text=${encodeURIComponent(text)}`;
+  window.open(url,'_blank');
+  document.getElementById('cfName').value='';
+  document.getElementById('cfEmail').value='';
+  document.getElementById('cfMsg').value='';
+  toast('WhatsApp khul gaya!','ok');
+}
+
+/* About Photo */
+function loadAboutPhoto(){
+  const photo=localStorage.getItem('ss_about_photo');
+  const img=document.getElementById('aboutPhotoImg');
+  const placeholder=document.getElementById('aboutPhotoPlaceholder');
+  if(photo&&img){
+    img.src=photo;
+    img.style.display='block';
+    if(placeholder)placeholder.style.display='none';
+  }else if(img){
+    img.style.display='none';
+    if(placeholder)placeholder.style.display='block';
+  }
+}
+function setBc(crumbs){
+  const el=document.getElementById('navBc');
+  el.innerHTML=crumbs.map((c,i)=>i<crumbs.length-1?`<span class="crumb" onclick="${c.fn||''}">${c.t}</span><span class="sep">›</span>`:`<span class="cur">${c.t}</span>`).join('');
+}
+function setNavR(loggedIn){
+  const el=document.getElementById('navR');
+  if(!loggedIn){el.innerHTML='<button class="mobile-tabs-btn" onclick="toggleMobileTabs()">Menu</button><button class="nbtn nbtn-g" onclick="showView(\'vLogin\')">Login</button><a href="admin.html" class="nbtn nbtn-s">Admin</a>';}
+  else{el.innerHTML=`<button class="mobile-tabs-btn" onclick="toggleMobileTabs()">Menu</button><span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${currentUser?.name||''}</span><button class="nbtn nbtn-r" onclick="logout()">Logout</button>`;}
+}
+
+/* ════ CUSTOM PAGES / NAV TABS ════ */
+function renderNavTabs(){
+  ra();
+  const services=CustomPages.filter(p=>p.category==='services').sort((a,b)=>(a.order||1)-(b.order||1));
+  const about=CustomPages.filter(p=>p.category==='about').sort((a,b)=>(a.order||1)-(b.order||1));
+  const other=CustomPages.filter(p=>p.category==='other').sort((a,b)=>(a.order||1)-(b.order||1));
+  
+  // Desktop dropdowns
+  document.getElementById('ddServices').innerHTML=services.length?services.map(p=>`<div class="nav-dd-item" onclick="openCustomPageById('${p.id}')">${p.title}</div>`).join(''):'<div class="nav-dd-empty">No services yet</div>';
+  document.getElementById('ddAbout').innerHTML=about.length?about.map(p=>`<div class="nav-dd-item" onclick="openCustomPageById('${p.id}')">${p.title}</div>`).join(''):'<div class="nav-dd-empty">No pages yet</div>';
+  document.getElementById('ddOther').innerHTML=other.length?other.map(p=>`<div class="nav-dd-item" onclick="openCustomPageById('${p.id}')">${p.title}</div>`).join(''):'<div class="nav-dd-empty">No pages yet</div>';
+  
+  // Mobile menu
+  document.getElementById('mobileServices').innerHTML=services.length?services.map(p=>`<div class="mobile-tab-item" onclick="openCustomPageById('${p.id}');closeMobileTabs()">${p.title}</div>`).join(''):'<div class="mobile-tab-item" style="color:rgba(255,255,255,.4)">No services</div>';
+  document.getElementById('mobileAbout').innerHTML=about.length?about.map(p=>`<div class="mobile-tab-item" onclick="openCustomPageById('${p.id}');closeMobileTabs()">${p.title}</div>`).join(''):'<div class="mobile-tab-item" style="color:rgba(255,255,255,.4)">No pages</div>';
+  document.getElementById('mobileOther').innerHTML=other.length?other.map(p=>`<div class="mobile-tab-item" onclick="openCustomPageById('${p.id}');closeMobileTabs()">${p.title}</div>`).join(''):'<div class="mobile-tab-item" style="color:rgba(255,255,255,.4)">No pages</div>';
+}
+
+function toggleMobileTabs(){
+  document.getElementById('mobileTabsMenu').classList.toggle('show');
+}
+function closeMobileTabs(){
+  document.getElementById('mobileTabsMenu').classList.remove('show');
+}
+
+function openCustomPage(category){
+  ra();
+  const pages=CustomPages.filter(p=>p.category===category).sort((a,b)=>(a.order||1)-(b.order||1));
+  if(pages.length===1){
+    openCustomPageById(pages[0].id);
+  }
+}
+
+function openCustomPageById(pageId){
+  ra();
+  const page=CustomPages.find(p=>p.id===pageId);
+  if(!page)return;
+  
+  const categories={services:'Services',about:'About Me',other:'Other'};
+  document.getElementById('cpBc').textContent=`${categories[page.category]||page.category} / ${page.title}`;
+  
+  const htmlCode=page.htmlCode||'<p>No content</p>';
+  const contentEl=document.getElementById('customPageContent');
+  const frameEl=document.getElementById('customPageFrame');
+  
+  // Check if it's a full HTML document (has <!DOCTYPE or <html or <head or <body tags)
+  const isFullHtml=htmlCode.trim().toLowerCase().startsWith('<!doctype')||
+                   htmlCode.includes('<html')||
+                   htmlCode.includes('<head>')||
+                   htmlCode.includes('<body>');
+  
+  if(isFullHtml){
+    // Use iframe for full HTML documents
+    contentEl.style.display='none';
+    frameEl.style.display='block';
+    frameEl.srcdoc=htmlCode;
+    // Auto-resize iframe based on content
+    frameEl.onload=function(){
+      try{
+        const h=frameEl.contentWindow.document.body.scrollHeight;
+        frameEl.style.height=(h+50)+'px';
+      }catch(e){}
+    };
+  }else{
+    // Use innerHTML for simple HTML snippets
+    frameEl.style.display='none';
+    contentEl.style.display='block';
+    contentEl.innerHTML=htmlCode;
+  }
+  
+  setBc([{t:'Home',fn:'goHome()'},{t:categories[page.category]||page.category},{t:page.title}]);
+  showView('vCustomPage');
+  closeMobileTabs();
+  }
+
+/* ════ HOME ════ */
+function renderHome(){
+  ra();
+  // Hero Slider
+  renderHeroSlider();
+  // Announcements - shows from dedicated announcements OR notices titles
+  const annTexts=Announcements.length?Announcements:Notices.map(n=>({text:n.title}));
+  const annBar=document.getElementById('annBar');
+  if(annTexts.length){
+    annBar.style.display='flex';
+    const items=annTexts.map(a=>`<span class="ann-item"><span class="dot">●</span>${a.text||a.title||''}</span>`).join('');
+    document.getElementById('annTicker').innerHTML=items+items;
+  } else annBar.style.display='none';
+  // Stats
+  document.getElementById('stC').textContent=C.length;
+  document.getElementById('stM').textContent=M.length;
+  document.getElementById('stT').textContent=T.length;
+  document.getElementById('stS').textContent=U.filter(u=>u.role==='student').length;
+  // Courses
+  const grid=document.getElementById('homeCourses');
+  grid.innerHTML=C.length?C.map(c=>{
+    const cm=M.filter(m=>m.cId===c.id),ct=T.filter(t=>cm.some(m=>m.id===t.mId));
+    return`<div class="cc" onclick="showView('vLogin')">
+      <div class="cc-thumb">${c.thumb?`<img src="${c.thumb}" alt="">`:''}${!c.thumb?c.ico||'📚':''}${c.thumb?'<div class="cc-thumb-ov"></div>':''}
+      </div>
+      <div class="cc-body">
+        <div class="cc-title">${c.ico||'📚'} ${c.name}</div>
+        <div class="cc-desc">${c.desc||'Login karke access karein'}</div>
+        <div class="cc-chips"><span class="chip cb">🗂 ${cm.length}</span><span class="chip cp">📄 ${ct.length}</span></div>
+      </div>
+      <div class="cc-foot"><span class="cc-fl">Login karke dekhen</span><span class="cc-fr">Login →</span></div>
+    </div>`;
+  }).join(''):`<div class="empty" style="grid-column:1/-1"><div class="empty-ico">📚</div><div class="empty-t">Koi course nahi</div></div>`;
+  // PDFs
+  if(PDFs.length){document.getElementById('homePDFSec').style.display='block';renderPDFGrid('homePDFs',PDFs);}
+  else document.getElementById('homePDFSec').style.display='none';
+}
+
+/* ════ HERO SLIDER ════ */
+function renderHeroSlider(){
+  const slider=document.getElementById('heroSlider');
+  const dots=document.getElementById('heroDots');
+  const defaultBg=document.getElementById('heroDefault');
+  const arrows=document.querySelector('.hero-arrows');
+  
+  // Sort slides by order
+  const sortedSlides=Slides.sort((a,b)=>(a.order||1)-(b.order||1));
+  
+  if(!sortedSlides.length){
+    slider.innerHTML='';
+    dots.innerHTML='';
+    defaultBg.style.display='flex';
+    arrows.style.display='none';
+    return;
+  }
+  
+  defaultBg.style.display='none';
+  arrows.style.display='flex';
+  
+  // Render slides
+  slider.innerHTML=sortedSlides.map((s,i)=>`
+    <div class="hero-slide" data-index="${i}">
+      ${s.bg?`<img src="${s.bg}" alt="${s.title||'Banner'}">`:'<div style="width:100%;height:100%;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#312e81 100%)"></div>'}
+      <div class="hero-slide-overlay">
+        <div class="hero-slide-content">
+          ${s.badge?`<div class="hero-slide-badge">${s.badge}</div>`:''}
+          ${s.title?`<div class="hero-slide-title">${s.title}</div>`:''}
+          ${s.subtitle?`<div class="hero-slide-subtitle">${s.subtitle}</div>`:''}
+          <div class="hero-slide-btns">
+            ${s.btnPrimary?`<button class="hero-slide-btn hero-slide-btn-p" onclick="showView('vLogin')">${s.btnPrimary}</button>`:''}
+            ${s.btnSec?`<button class="hero-slide-btn hero-slide-btn-s" onclick="showView('vLogin')">${s.btnSec}</button>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  // Render dots
+  dots.innerHTML=sortedSlides.map((s,i)=>`<button class="hero-dot${i===0?' active':''}" onclick="goToSlide(${i})"></button>`).join('');
+  
+  // Reset to first slide
+  currentSlide=0;
+  updateSlider();
+  
+  // Start auto-slide
+  startSlideShow();
+}
+
+function updateSlider(){
+  const slider=document.getElementById('heroSlider');
+  const dots=document.querySelectorAll('.hero-dot');
+  slider.style.transform=`translateX(-${currentSlide*100}%)`;
+  dots.forEach((d,i)=>d.classList.toggle('active',i===currentSlide));
+}
+
+function nextSlide(){
+  const totalSlides=Slides.length;
+  if(totalSlides<1)return;
+  currentSlide=(currentSlide+1)%totalSlides;
+  updateSlider();
+  restartSlideShow();
+}
+
+function prevSlide(){
+  const totalSlides=Slides.length;
+  if(totalSlides<1)return;
+  currentSlide=(currentSlide-1+totalSlides)%totalSlides;
+  updateSlider();
+  restartSlideShow();
+}
+
+function goToSlide(idx){
+  currentSlide=idx;
+  updateSlider();
+  restartSlideShow();
+}
+
+function startSlideShow(){
+  if(slideInterval)clearInterval(slideInterval);
+  if(Slides.length>1){
+    slideInterval=setInterval(()=>{
+      currentSlide=(currentSlide+1)%Slides.length;
+      updateSlider();
+    },4000);
+  }
+}
+
+function restartSlideShow(){
+  if(slideInterval)clearInterval(slideInterval);
+  startSlideShow();
+}
+
+/* ════ TOUCH SWIPE FOR SLIDER ════ */
+let touchStartX=0,touchEndX=0,isSwiping=false;
+
+function initSliderTouch(){
+  const slider=document.getElementById('heroBanner');
+  if(!slider)return;
+  
+  slider.addEventListener('touchstart',e=>{
+    touchStartX=e.changedTouches[0].screenX;
+    isSwiping=true;
+  },{passive:true});
+  
+  slider.addEventListener('touchmove',e=>{
+    if(!isSwiping)return;
+    touchEndX=e.changedTouches[0].screenX;
+  },{passive:true});
+  
+  slider.addEventListener('touchend',()=>{
+    if(!isSwiping)return;
+    isSwiping=false;
+    handleSwipe();
+  },{passive:true});
+}
+
+function handleSwipe(){
+  const diff=touchStartX-touchEndX;
+  const threshold=50; // minimum swipe distance
+  
+  if(Math.abs(diff)<threshold)return;
+  
+  if(diff>0){
+    // Swipe left - next slide
+    nextSlide();
+  }else{
+    // Swipe right - prev slide
+    prevSlide();
+  }
+}
+
+// Initialize touch on page load
+document.addEventListener('DOMContentLoaded',initSliderTouch);
+
+function renderPDFGrid(id,list){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=list.length?list.map(p=>`<div class="pdf-card" onclick="openPDF('${p.id}')"><div class="pdf-ico">📄</div><div class="pdf-info"><div class="pdf-name">${p.name}</div><div class="pdf-meta">${p.category||'General'}${p.size?' · '+p.size:''}</div><div class="pdf-dl">⬇ Download</div></div></div>`).join(''):`<div class="empty" style="grid-column:1/-1"><div class="empty-ico">📄</div><div class="empty-t">Koi PDF nahi</div></div>`;
+}
+function openPDF(id){
+  const p=PDFs.find(x=>x.id===id);if(!p)return;
+  if(p.url)window.open(p.url,'_blank');
+  else if(p.data){const w=window.open();w.document.write(`<iframe src="${p.data}" width="100%" height="100%" style="border:none;position:fixed;inset:0"></iframe>`);}
+  else toast('PDF link nahi mili','err');
+}
+
+/* ════ AUTH ════ */
+let loginRole='student';
+function setRole(r,btn){loginRole=r;document.querySelectorAll('.role-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on')}
+function doLogin(){
+  ra();
+  const email=document.getElementById('lEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('lPass').value;
+  const err=document.getElementById('loginErr');
+  const u=U.find(x=>x.email.toLowerCase()===email&&x.pass===pass&&x.role===loginRole);
+  if(!u){err.classList.add('show');document.getElementById('lPass').value='';return}
+  err.classList.remove('show');
+  currentUser=u;setNavR(true);
+  if(u.role==='student')loadStudentDash(u);
+  else loadStaffDash(u);
+}
+function logout(){currentUser=null;setNavR(false);goHome();toast('Logged out','ok')}
+
+/* ════ STUDENT DASH ════ */
+function loadStudentDash(u){
+  ra();
+  const batch=B.find(b=>b.id===u.batchId);
+  const course=batch?C.find(c=>c.id===batch.courseId):null;
+  const unlocked=batch?.unlockedTopics||[];
+  document.getElementById('stuAv').textContent=u.name.charAt(0).toUpperCase();
+  document.getElementById('stuNm').textContent=u.name;
+  document.getElementById('stuBatch').textContent=batch?.name||'No Batch';
+  document.getElementById('stuWelcomeH').textContent=`Namaste, ${u.name}! 👋`;
+  document.getElementById('stuWelcomeP').textContent=batch?`${batch.name} · ${course?.name||''}` : 'Batch assign nahi hua';
+  const mods=course?M.filter(m=>m.cId===course.id):[];
+  const myT=T.filter(t=>mods.some(m=>m.id===t.mId));
+  document.getElementById('stuStats').innerHTML=`
+    <div class="d-stat"><div class="dsi">📚</div><div class="dsn">${mods.length}</div><div class="dsl">Modules</div></div>
+    <div class="d-stat"><div class="dsi">🔓</div><div class="dsn">${unlocked.length}</div><div class="dsl">Unlocked</div></div>
+    <div class="d-stat"><div class="dsi">📄</div><div class="dsn">${myT.length}</div><div class="dsl">Topics</div></div>
+    <div class="d-stat"><div class="dsi">📝</div><div class="dsn">${getStudentScore(u.id)}</div><div class="dsl">Quizzes Done</div></div>
+  `;
+  const n=Notices[0];
+  document.getElementById('stuNoticeSnip').innerHTML=n?`<div class="notice-item${n.important?' imp':''}"><div class="ni-title">📢 ${n.title}</div><div class="ni-desc">${n.desc||''}</div><div class="ni-date">${n.date||''}</div></div>`:'';
+  renderStudentCourse(batch,course,mods,unlocked);
+  renderStudentQuiz(u,batch);
+  renderPDFGrid('stuPDFs',PDFs);
+  renderNotices('stuNotices');
+  setBc([{t:'Home',fn:'goHome()'},{t:course?.name||'Dashboard'}]);
+  showView('vStudent');fromView='vStudent';
+}
+
+function getStudentScore(uid){return Scores.filter(s=>s.uid===uid).length}
+
+function renderStudentCourse(batch,course,mods,unlocked){
+  const el=document.getElementById('stuCourseContent');
+  if(!course){el.innerHTML=`<div class="empty"><div class="empty-ico">📚</div><div class="empty-t">Koi course assign nahi</div><div class="empty-s">Admin se batch assign karwayein</div></div>`;return}
+  el.innerHTML=`<div style="margin-bottom:16px"><div style="font-size:15px;font-weight:800;margin-bottom:2px">${course.ico||'📚'} ${course.name}</div><div style="font-size:11px;color:var(--ink3)">${course.desc||''}</div></div>`+
+  mods.map(m=>{
+    const mt=T.filter(t=>t.mId===m.id);
+    const ulCnt=mt.filter(t=>unlocked.includes(t.id)).length;
+    return`<div class="mod-card">
+      <div class="mc-hd" onclick="toggleMod(this)">
+        <div class="mc-ico" style="background:${m.bg||'#f1f5f9'};color:${m.clr||'#475569'}">${m.ico||'📁'}</div>
+        <div class="mc-info"><div class="mc-title">${m.name}</div><div class="mc-sub">${ulCnt}/${mt.length} unlocked</div></div>
+        <div class="mc-badge">${mt.length}</div>
+        <div class="mc-arr">›</div>
+      </div>
+      <div class="mc-body">
+        ${mt.map((t,i)=>{
+          const ul=unlocked.includes(t.id);
+          return`<div class="ch-row ${ul?'':'locked'}" onclick="${ul?`openReader('${t.id}')`:``}">
+            <div class="ch-n">${i+1}</div>
+            <div class="ch-em">${t.emoji||'📖'}</div>
+            <div class="ch-info"><div class="ch-name">${t.name}</div><div class="ch-meta">${ul?(t.notes?'📝 ':'')+(t.pptLink?'🎯 ':''):'🔒 Locked'}</div></div>
+            <div class="ch-bdgs">
+${ul&&t.notes?'<span class="ch-bdg cbn">Notes</span>':''}
+  ${ul&&t.pptLink&&currentUser?.role==='staff'?'<span class="ch-bdg cbp">PPT</span>':''}
+              ${!ul?'<span class="ch-bdg cbs">🔒</span>':''}
+            </div>
+            ${ul?'<div class="ch-arr">›</div>':''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ════ STUDENT QUIZ ════ */
+function renderStudentQuiz(u,batch){
+  const el=document.getElementById('stuQuizContent');
+  const course=batch?C.find(c=>c.id===batch.courseId):null;
+  if(!course){el.innerHTML=`<div class="empty"><div class="empty-ico">📝</div><div class="empty-t">Koi course nahi</div></div>`;return}
+  const secs=QSecs.filter(s=>s.cId===course.id).sort((a,b)=>(a.order||0)-(b.order||0));
+  el.innerHTML=`<div style="font-size:15px;font-weight:800;margin-bottom:16px">📝 Quiz — ${course.name}</div>`+
+  (secs.length?secs.map(sec=>{
+    const chs=QChs.filter(c=>c.secId===sec.id).sort((a,b)=>(a.order||0)-(b.order||0));
+    return`<div class="quiz-section-card">
+      <div class="qsc-hd" onclick="toggleQSec(this)">
+        <div class="qsc-ico">📋</div>
+        <div class="qsc-info"><div class="qsc-name">${sec.name}</div><div class="qsc-sub">${chs.length} quizzes</div></div>
+        <div class="qsc-arr">›</div>
+      </div>
+      <div class="qsc-body">
+        ${chs.map(ch=>{
+          const score=Scores.find(s=>s.uid===u.id&&s.qchId===ch.id);
+          return`<div class="quiz-ch-item" onclick="openQuizChapter('${ch.id}','${u.id}')">
+            <div class="qci-ico">📝</div>
+            <div class="qci-info"><div class="qci-name">${ch.name}</div><div class="qci-meta">${score?'Attempted':'Not attempted yet'}</div></div>
+            ${score?`<div class="qci-score qs-done">✓ ${score.score}/${score.total}</div>`:'<div class="qci-score qs-pending">Start →</div>'}
+          </div>`;
+        }).join('')}
+        ${!chs.length?'<div style="padding:14px;text-align:center;font-size:12px;color:var(--ink3)">Koi quiz nahi</div>':''}
+      </div>
+    </div>`;
+  }).join(''):`<div class="empty"><div class="empty-ico">📝</div><div class="empty-t">Koi quiz section nahi</div></div>`);
+}
+
+function toggleQSec(hd){
+  hd.classList.toggle('open');
+  hd.nextElementSibling.classList.toggle('open');
+}
+
+function openQuizChapter(qchId,uid){
+  ra();
+  const ch=QChs.find(x=>x.id===qchId);if(!ch)return;
+  const sec=QSecs.find(x=>x.id===ch.secId);
+  activeQuizCh={ch,uid};
+  document.getElementById('qpBc').textContent=`${sec?.name||''} › ${ch.name}`;
+  renderQuizPlayer(ch,uid);
+  setBc([{t:'Home',fn:'goHome()'},{t:'Quiz',fn:'exitQuiz()'},{t:ch.name}]);
+  showView('vQuizPlayer');
+}
+
+function renderQuizPlayer(ch,uid){
+  const el=document.getElementById('quizPlayer');
+  // Check if it's HTML code (iframe-type embed) or JSON quiz
+  const code=ch.htmlCode||'';
+  if(!code.trim()){el.innerHTML=`<div class="ppt-empty"><div class="ppt-empty-ico" style="font-size:36px;opacity:.2;margin-bottom:8px">📝</div><p style="font-size:13px;font-weight:700;color:var(--ink2)">Quiz code nahi mila</p></div>`;return}
+  // Try JSON MCQ
+  let quizData=null;
+  try{
+    const trimmed=code.trim();
+    if(trimmed.startsWith('{')||trimmed.startsWith('['))quizData=JSON.parse(trimmed);
+  }catch(e){}
+  if(quizData&&(quizData.questions||Array.isArray(quizData))){
+    const qs=quizData.questions||quizData;
+    const title=quizData.title||ch.name;
+    renderMCQQuiz(el,qs,title,ch,uid);
+  } else {
+    // Render as HTML embed
+    el.innerHTML=`<div style="padding:14px">
+      <div style="font-size:14px;font-weight:800;margin-bottom:12px;color:var(--ink)">${ch.name}</div>
+      <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border)">${code}</div>
+    </div>`;
+  }
+}
+
+function renderMCQQuiz(el,qs,title,ch,uid){
+  if(!qs||!qs.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--ink3)">Koi question nahi</div>';return}
+  let cur=0,score=0,answered=false;
+  function render(){
+    const q=qs[cur];
+    const pct=Math.round((cur/qs.length)*100);
+    el.innerHTML=`
+      <div class="qp-hd">
+        <div class="qp-title">${title}</div>
+        <div class="qp-meta">Question ${cur+1} of ${qs.length}</div>
+        <div class="qp-progress"><div class="qp-prog-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div class="qp-body">
+        <div class="qp-q-num">Q${cur+1}</div>
+        <div class="qp-question">${q.q||q.question}</div>
+        <div class="qp-opts" id="qpOpts">
+          ${(q.options||q.opts||[]).map((o,i)=>`<button class="qp-opt" onclick="selectOpt(${i})" data-idx="${i}">
+            <div class="qp-opt-letter">${String.fromCharCode(65+i)}</div>
+            <span>${o}</span>
+          </button>`).join('')}
+        </div>
+        <div class="qp-feedback" id="qpFb"></div>
+      </div>
+      <div class="qp-nav">
+        <div style="font-size:12px;font-weight:700;color:var(--ink3)">Score: ${score}/${qs.length}</div>
+        <button class="qp-btn qp-btn-p" id="nextBtn" style="display:none" onclick="nextQ()">
+          ${cur<qs.length-1?'Next →':'Finish ✓'}
+        </button>
+      </div>
+    `;
+    answered=false;
+  }
+  function selectOpt(idx){
+    if(answered)return;
+    answered=true;
+    const q=qs[cur];
+    const correct=q.ans??q.correct??q.answer??0;
+    const opts=document.querySelectorAll('.qp-opt');
+    opts.forEach((o,i)=>{
+      o.classList.add('disabled');
+      if(i===correct)o.classList.add('correct');
+      else if(i===idx&&idx!==correct)o.classList.add('wrong');
+    });
+    opts[idx].classList.add('selected');
+    const fb=document.getElementById('qpFb');
+    if(idx===correct){score++;fb.textContent='✅ Correct!';fb.className='qp-feedback show fb-correct';}
+    else{fb.textContent=`❌ Wrong. Correct: ${String.fromCharCode(65+correct)}) ${(q.options||q.opts||[])[correct]}`;fb.className='qp-feedback show fb-wrong';}
+    document.getElementById('nextBtn').style.display='block';
+  }
+  function nextQ(){
+    cur++;
+    if(cur>=qs.length){showResult();return}
+    render();
+  }
+  function showResult(){
+    const pct=Math.round((score/qs.length)*100);
+    const emoji=pct>=80?'🏆':pct>=60?'😊':pct>=40?'😐':'😔';
+    const msg=pct>=80?'Excellent! Bahut achha kiya!':pct>=60?'Good! Aur practice karein.':pct>=40?'Average. Revision karein.':'Mehnat karein. Dobara try karein!';
+    // Save score
+    ra();
+    const existing=Scores.findIndex(s=>s.uid===uid&&s.qchId===ch.id);
+    const entry={uid,qchId:ch.id,score,total:qs.length,pct,date:new Date().toLocaleDateString('hi-IN')};
+    if(existing>-1)Scores[existing]=entry;else Scores.push(entry);
+    sv(K.scores,Scores);
+    el.innerHTML=`<div class="qp-result">
+      <div class="qr-emoji">${emoji}</div>
+      <div class="qr-score">${score}/${qs.length}</div>
+      <div class="qr-total">${pct}% Score</div>
+      <div class="qr-bar-wrap"><div class="qr-bar" style="width:${pct}%"></div></div>
+      <div class="qr-msg">${msg}</div>
+      <button class="qp-btn qp-btn-p" onclick="exitQuiz()" style="margin-right:8px">← Back</button>
+      <button class="qp-btn qp-btn-s" onclick="retryQuiz()">🔄 Retry</button>
+    </div>`;
+  }
+  window._selectOpt=selectOpt;
+  window._nextQ=nextQ;
+  render();
+  // Expose to onclick
+  window.selectOpt=selectOpt;
+  window.nextQ=nextQ;
+}
+
+function retryQuiz(){if(activeQuizCh)openQuizChapter(activeQuizCh.ch.id,activeQuizCh.uid)}
+function exitQuiz(){
+  ra();
+  if(currentUser){
+    const batch=B.find(b=>b.id===currentUser.batchId);
+    renderStudentQuiz(currentUser,batch);
+    showView('vStudent');
+    stuNav('dQuiz',null,2);
+  } else goHome();
+}
+
+/* ════ STAFF DASH ════ */
+function loadStaffDash(u){
+  ra();
+  document.getElementById('staffNm').textContent=u.name;
+  document.getElementById('staffWelcomeH').textContent=`Namaste, ${u.name}! 👨‍🏫`;
+  document.getElementById('staffStats').innerHTML=`
+    <div class="d-stat"><div class="dsi">📚</div><div class="dsn">${C.length}</div><div class="dsl">Courses</div></div>
+    <div class="d-stat"><div class="dsi">🗂</div><div class="dsn">${M.length}</div><div class="dsl">Modules</div></div>
+    <div class="d-stat"><div class="dsi">📄</div><div class="dsn">${T.length}</div><div class="dsl">Topics</div></div>
+    <div class="d-stat"><div class="dsi">👨‍🎓</div><div class="dsn">${U.filter(u=>u.role==='student').length}</div><div class="dsl">Students</div></div>
+  `;
+  renderStaffCourses();
+  renderPDFGrid('staffPDFs',PDFs);
+  renderNotices('staffNotices');
+  setBc([{t:'Staff Dashboard'}]);
+  showView('vStaff');fromView='vStaff';
+}
+
+function renderStaffCourses(){
+  const el=document.getElementById('staffCourseContent');
+  el.innerHTML=C.map(c=>{
+    const cm=M.filter(m=>m.cId===c.id);
+    return`<div style="margin-bottom:20px"><div style="font-size:14px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="width:32px;height:32px;border-radius:var(--r8);background:${c.bg||'#eff6ff'};color:${c.clr||'#2563eb'};display:inline-flex;align-items:center;justify-content:center;font-size:15px">${c.ico||'📚'}</span>${c.name}</div>`+
+    cm.map(m=>{
+      const mt=T.filter(t=>t.mId===m.id);
+      return`<div class="mod-card" style="margin-bottom:8px">
+        <div class="mc-hd" onclick="toggleMod(this)">
+          <div class="mc-ico" style="background:${m.bg||'#f1f5f9'};color:${m.clr||'#475569'}">${m.ico||'📁'}</div>
+          <div class="mc-info"><div class="mc-title">${m.name}</div><div class="mc-sub">${mt.length} topics</div></div>
+          <div class="mc-badge">${mt.length}</div>
+          <div class="mc-arr">›</div>
+        </div>
+        <div class="mc-body">
+          ${mt.map((t,i)=>`<div class="ch-row" onclick="openReader('${t.id}')">
+            <div class="ch-n">${i+1}</div><div class="ch-em">${t.emoji||'📖'}</div>
+            <div class="ch-info"><div class="ch-name">${t.name}</div><div class="ch-meta">${t.notes?'📝 ':''}${t.pptLink?'🎯 ':''}</div></div>
+            <div class="ch-arr">›</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  }).join('')||`<div class="empty"><div class="empty-ico">📚</div><div class="empty-t">Koi course nahi</div></div>`;
+}
+
+/* ════ NOTICES ═���══ */
+function renderNotices(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=Notices.length?Notices.map(n=>`<div class="notice-item${n.important?' imp':''}"><div class="ni-title">${n.important?'⭐ ':'📢 '}${n.title}</div>${n.desc?`<div class="ni-desc">${n.desc}</div>`:''}<div class="ni-date">${n.date||''}</div></div>`).join(''):`<div class="empty"><div class="empty-ico">📢</div><div class="empty-t">Koi notice nahi</div></div>`;
+}
+
+/* ════ READER ════ */
+function openReader(tId){
+  ra();
+  activeTopicId=tId;
+  const t=T.find(x=>x.id===tId);if(!t)return;
+  // Sidebar topics based on role
+  if(currentUser?.role==='staff'){
+    readerTopics=T.filter(x=>x.mId===t.mId);
+  } else {
+    const batch=B.find(b=>b.id===currentUser?.batchId);
+    const ul=batch?.unlockedTopics||[];
+    readerTopics=T.filter(x=>x.mId===t.mId&&ul.includes(x.id));
+  }
+  document.getElementById('readerSBList').innerHTML=readerTopics.map((rt,i)=>`
+    <div class="rsb-item ${rt.id===tId?'on':''}" onclick="openReader('${rt.id}')">
+      <div class="rsb-n">${i+1}</div>
+      <div class="rsb-nm">${rt.emoji||'📖'} ${rt.name}</div>
+      ${rt.notes||rt.pptLink?'<span class="rsb-done">✓</span>':''}
+    </div>`).join('');
+  document.getElementById('rTitle').textContent=`${t.emoji||'📖'} ${t.name}`;
+  // Show PPT tab only for staff/teacher, hide for students
+  const isStaff=currentUser&&currentUser.role==='staff';
+  const pptTab=document.getElementById('pptTabBtn');
+  const fsPptTab=document.getElementById('fsPptTabBtn');
+  if(pptTab)pptTab.style.display=isStaff?'inline-flex':'none';
+  if(fsPptTab)fsPptTab.style.display=isStaff?'inline-flex':'none';
+  document.getElementById('notesRender').innerHTML=t.notes?.trim()?parseNotes(t.notes):`<div class="empty"><div class="empty-ico">📝</div><div class="empty-t">Notes abhi nahi hain</div></div>`;
+  document.getElementById('pptRender').innerHTML=t.pptLink?.trim()?`<div class="ppt-card"><div class="ppt-card-ico">▶</div><div class="ppt-card-title">Presentation Ready</div><div class="ppt-card-sub">Click below to open the presentation in a new tab</div><a href="${t.pptLink}" target="_blank" class="ppt-card-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Open Presentation</a></div>`:`<div class="ppt-empty"><div class="empty-ico">🎯</div><div class="empty-t">PPT abhi nahi hai</div></div>`;
+  switchRTab('notes',document.querySelector('.rtab'));
+  setBc([{t:'Home',fn:'goHome()'},{t:T.find(x=>x.id===tId)?.name||'Reader'}]);
+  showView('vReader');
+}
+
+function toggleMod(hd){hd.classList.toggle('open');hd.nextElementSibling.classList.toggle('open')}
+function switchRTab(tab,btn){
+  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  document.getElementById(tab==='notes'?'tpNotes':'tpPPT').classList.add('on');
+}
+function prevTopic(){const i=readerTopics.findIndex(t=>t.id===activeTopicId);if(i>0)openReader(readerTopics[i-1].id);else toast('Pehla chapter hai','info')}
+function nextTopic(){const i=readerTopics.findIndex(t=>t.id===activeTopicId);if(i<readerTopics.length-1)openReader(readerTopics[i+1].id);else toast('Aakhri chapter hai','info')}
+
+/* ════ FULLSCREEN ════ */
+function openFS(){
+  const t=T.find(x=>x.id===activeTopicId);if(!t)return;
+  document.getElementById('fsTitle').textContent=`${t.emoji||'📖'} ${t.name}`;
+  renderFSContent('notes',t);
+  document.getElementById('fsOv').classList.add('show');
+  document.documentElement.requestFullscreen?.();
+}
+function closeFS(){document.getElementById('fsOv').classList.remove('show');document.exitFullscreen?.()}
+function switchFSTab(tab,btn){
+  document.querySelectorAll('.fs-rtab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  renderFSContent(tab,T.find(x=>x.id===activeTopicId));
+}
+function renderFSContent(tab,t){
+  const el=document.getElementById('fsBody');
+  if(tab==='notes')el.innerHTML=`<div class="nr">${t?.notes?.trim()?parseNotes(t.notes):'<p style="color:#475569">Notes nahi hain</p>'}</div>`;
+  else el.innerHTML=t?.pptLink?.trim()?`<div class="ppt-wrap"><iframe src="${pptEmbed(t.pptLink)}" allowfullscreen></iframe></div>`:`<div class="ppt-empty"><div class="empty-ico" style="opacity:.15;color:#fff">🎯</div><div style="color:#94a3b8;font-size:13px;font-weight:700">PPT nahi hai</div></div>`;
+}
+function pptEmbed(url){if(url.includes('canva.com'))return url.split('?')[0].replace(/\/view$/,'')+'?embed';return url}
+
+/* ════ NAV HELPERS ════ */
+function stuNav(panelId,btn,bnIdx){
+  document.querySelectorAll('#vStudent .d-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById(panelId).classList.add('on');
+  if(btn){document.querySelectorAll('#vStudent .sb-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on')}
+  if(bnIdx!==undefined){for(let i=0;i<5;i++){const b=document.getElementById('bn'+i);if(b)b.classList.toggle('on',i===bnIdx)}}
+}
+function staffNav(panelId,btn,bnIdx){
+  document.querySelectorAll('#vStaff .d-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById(panelId).classList.add('on');
+  if(btn){document.querySelectorAll('#vStaff .sb-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on')}
+  if(bnIdx!==undefined){for(let i=0;i<5;i++){const b=document.getElementById('sfbn'+i);if(b)b.classList.toggle('on',i===bnIdx)}}
+}
+
+/* ════ NOTES PARSER ════ */
+function parseNotes(raw){
+  let txt=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^💡 (.+)$/gm,'<div class="tip-b">💡 $1</div>')
+    .replace(/^⭐ (.+)$/gm,'<div class="imp-b">⭐ $1</div>')
+    .replace(/^✅ (.+)$/gm,'<div class="eg-b">✅ $1</div>')
+    .replace(/^---$/gm,'<hr>');
+  txt=txt.replace(/(\|.+\|\n?)+/g,blk=>{
+    const rows=blk.trim().split('\n').filter(r=>!r.match(/^\|[-| ]+\|$/));
+    if(!rows.length)return blk;
+    const cells=r=>r.slice(1,-1).split('|').map(c=>c.trim());
+    return`<table><thead><tr>${cells(rows[0]).map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map(r=>`<tr>${cells(r).map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  });
+  txt=txt.replace(/(^- .+$\n?)+/gm,b=>`<ul>${b.trim().split('\n').map(l=>`<li>${l.slice(2)}</li>`).join('')}</ul>`);
+  txt=txt.replace(/(^\d+\. .+$\n?)+/gm,b=>`<ol>${b.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('')}</ol>`);
+  return txt.split('\n').map(l=>{l=l.trim();if(!l)return'';if(/^<(h[1-6]|ul|ol|table|div|hr)/.test(l))return l;return`<p>${l}</p>`;}).join('');
+}
+
+/* ════ UTILS ════ */
+function toast(msg,type='ok'){const el=document.getElementById('tst');el.textContent=msg;el.className=`toast show t-${type}`;setTimeout(()=>el.classList.remove('show'),2800)}
+
+/* START */
+// Initial load from localStorage, then sync from Firebase
+ra();
+renderHome();
+renderNavTabs();
+
+// Load data from Firebase in background
+if(firebaseReady) {
+  raFirebase().then(() => {
+    renderHome();
+    renderNavTabs();
+    console.log("[v0] UI refreshed with Firebase data");
+  });
+}
+</script>
+</body>
+</html>

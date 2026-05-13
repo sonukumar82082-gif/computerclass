@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Sonu Sir's Classes</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;
+  --surf:#fff;--bg:#f1f5f9;--bg2:#e2e8f0;
+  --blue:#2563eb;--blue-lt:#eff6ff;--blue-dk:#1d4ed8;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --orange:#ea580c;--orange-lt:#fff7ed;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --yellow:#d97706;--yellow-lt:#fffbeb;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --r4:4px;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--r99:999px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.07);
+  --sh:0 4px 16px rgba(0,0,0,.08);
+  --sh-lg:0 12px 40px rgba(0,0,0,.13);
+  --sh-xl:0 24px 64px rgba(0,0,0,.15);
+  --g-blue:linear-gradient(135deg,#2563eb,#7c3aed);
+  --font:'Plus Jakarta Sans','Noto Sans Devanagari',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font-family:var(--font);cursor:pointer;border:none;outline:none}
+input,select,textarea{font-family:var(--font);outline:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+.view{display:none}.view.on{display:block}
+
+/* ═══ LOGIN ═══ */
+.login-page{min-height:100vh;background:#0f172a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:20px}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 50%,rgba(37,99,235,.28),transparent 60%),radial-gradient(ellipse 60% 60% at 80% 30%,rgba(124,58,237,.18),transparent 60%)}
+.login-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px}
+.login-wrap{position:relative;width:100%;max-width:400px}
+.login-brand{text-align:center;margin-bottom:28px}
+.login-mark{width:52px;height:52px;border-radius:var(--r12);background:var(--g-blue);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 6px 20px rgba(37,99,235,.4);margin:0 auto 12px}
+.login-name{font-size:18px;font-weight:800;color:#fff}
+.login-sub{font-size:12px;color:rgba(255,255,255,.3);margin-top:3px}
+.login-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r20);padding:28px;backdrop-filter:blur(20px)}
+.login-err{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5;padding:10px 14px;border-radius:var(--r8);font-size:12px;font-weight:600;margin-bottom:14px;display:none}
+.login-err.show{display:block}
+.lf{margin-bottom:13px}
+.lf label{display:block;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.lf input{width:100%;padding:11px 13px;border:1.5px solid rgba(255,255,255,.1);border-radius:var(--r8);font-size:13px;color:#fff;background:rgba(255,255,255,.06);transition:.16s}
+.lf input:focus{border-color:var(--blue);background:rgba(37,99,235,.1)}
+.lf input::placeholder{color:rgba(255,255,255,.2)}
+.login-btn{width:100%;padding:12px;border-radius:var(--r8);font-size:14px;font-weight:700;background:var(--g-blue);color:#fff;box-shadow:0 4px 20px rgba(37,99,235,.35);transition:.2s;margin-top:4px}
+.login-btn:hover{box-shadow:0 6px 28px rgba(37,99,235,.5);transform:translateY(-1px)}
+.back-btn{width:100%;margin-top:10px;padding:10px;border-radius:var(--r8);font-size:12px;font-weight:600;background:transparent;color:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.08)}
+.back-btn:hover{color:rgba(255,255,255,.4)}
+
+/* ═══ ADMIN LAYOUT ═══ */
+.admin-wrap{display:flex;flex-direction:column;min-height:100vh}
+@media(min-width:900px){.admin-wrap{display:grid;grid-template-columns:260px 1fr}}
+.mobile-menu-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--g-blue);color:#fff;border-radius:var(--r8);font-size:12px;font-weight:700;border:none;cursor:pointer}
+@media(min-width:900px){.mobile-menu-btn{display:none}}
+.admin-sb{background:#0f172a;display:none;flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:280px;z-index:500;overflow-y:auto;flex-shrink:0;transform:translateX(-100%);transition:.3s}
+.admin-sb.open{display:flex;transform:translateX(0)}
+@media(min-width:900px){.admin-sb{display:flex;position:sticky;width:auto;transform:none}}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499}
+.sb-overlay.show{display:block}
+@media(min-width:900px){.sb-overlay{display:none!important}}
+.asb-inner{padding:18px 13px 12px;flex:1}
+.asb-brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;padding:0 3px}
+.asb-mark{width:36px;height:36px;border-radius:var(--r8);background:var(--g-blue);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(37,99,235,.35);flex-shrink:0}
+.asb-name{font-size:13px;font-weight:800;color:#fff}
+.asb-sub{font-size:10px;color:rgba(255,255,255,.25)}
+.asb-sec{margin-bottom:6px}
+.asb-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.8px;padding:10px 13px 5px}
+.asb-item{display:flex;align-items:center;gap:9px;padding:8px 13px;border-radius:var(--r8);width:100%;text-align:left;background:transparent;color:rgba(255,255,255,.42);font-size:13px;font-weight:600;transition:.16s;border:none;margin:1px 0}
+.asb-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+.asb-item.on{background:rgba(37,99,235,.22);color:#fff}
+.asb-ico{width:17px;text-align:center;font-size:13px;flex-shrink:0}
+.asb-cnt{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--r99);background:rgba(255,255,255,.07);color:rgba(255,255,255,.32)}
+.asb-item.on .asb-cnt{background:rgba(37,99,235,.25);color:#93c5fd}
+.asb-foot{padding:14px 13px;border-top:1px solid rgba(255,255,255,.06)}
+.logout-btn{display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:var(--r8);width:100%;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.18);color:#fca5a5;font-size:13px;font-weight:600;transition:.16s}
+.logout-btn:hover{background:rgba(220,38,38,.2)}
+
+/* MAIN */
+.admin-main{background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
+.admin-tb{background:var(--surf);border-bottom:1px solid var(--border);padding:0 14px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:10px}
+@media(min-width:900px){.admin-tb{padding:0 26px;height:56px}}
+.at-title{font-size:14px;font-weight:800;color:var(--ink)}
+@media(min-width:900px){.at-title{font-size:15px}}
+.at-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+.admin-cnt{padding:14px;flex:1}
+@media(min-width:900px){.admin-cnt{padding:24px}}
+.a-panel{display:none}.a-panel.on{display:block;animation:fup .2s ease}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:600px){.stats-g{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:13px;margin-bottom:24px}}
+.sc{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);padding:12px;box-shadow:var(--sh-sm)}
+@media(min-width:600px){.sc{border-radius:var(--r16);padding:16px}}
+.sc-ico{width:32px;height:32px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:8px}
+@media(min-width:600px){.sc-ico{width:36px;height:36px;font-size:16px;margin-bottom:10px}}
+.sc-n{font-size:20px;font-weight:800;letter-spacing:-1px;color:var(--ink)}
+@media(min-width:600px){.sc-n{font-size:24px}}
+.sc-l{font-size:10px;color:var(--ink3);font-weight:500;margin-top:1px}
+@media(min-width:600px){.sc-l{font-size:11px}}
+
+/* TABLE */
+.dtw{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);overflow:hidden;box-shadow:var(--sh-sm);margin-bottom:16px}
+@media(min-width:600px){.dtw{border-radius:var(--r16);margin-bottom:24px}}
+.dtw-hd{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+@media(min-width:600px){.dtw-hd{padding:14px 18px}}
+.dtw-title{font-size:13px;font-weight:800;color:var(--ink)}
+.dtw-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+.dt{width:100%;border-collapse:collapse}
+.dt th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px;background:var(--bg);border-bottom:1px solid var(--border)}
+@media(min-width:600px){.dt th{padding:9px 14px;font-size:10px;letter-spacing:.4px}}
+.dt td{padding:10px;font-size:11px;color:var(--ink2);border-bottom:1px solid var(--border);vertical-align:middle}
+@media(min-width:600px){.dt td{padding:11px 14px;font-size:12px}}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:var(--bg)}
+.dt td.bold{font-weight:700;color:var(--ink);font-size:12px}
+@media(min-width:600px){.dt td.bold{font-size:13px}}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.abs{display:flex;gap:5px;flex-wrap:wrap}
+.ab{width:28px;height:28px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:12px;transition:.16s}
+.ab-e{background:var(--blue-lt);color:var(--blue)}.ab-e:hover{background:var(--blue);color:#fff}
+.ab-d{background:var(--red-lt);color:var(--red)}.ab-d:hover{background:var(--red);color:#fff}
+.ab-g{background:var(--green-lt);color:var(--green)}.ab-g:hover{background:var(--green);color:#fff}
+.bp{padding:2px 8px;border-radius:var(--r99);font-size:10px;font-weight:700}
+.bp-b{background:var(--blue-lt);color:var(--blue)}
+.bp-g{background:var(--green-lt);color:var(--green)}
+.bp-o{background:var(--orange-lt);color:var(--orange)}
+.bp-gr{background:var(--bg2);color:var(--ink3)}
+.bp-p{background:var(--purple-lt);color:var(--purple)}
+.bp-y{background:var(--yellow-lt);color:var(--yellow)}
+.bp-r{background:var(--red-lt);color:var(--red)}
+
+/* FORM */
+.fp{background:var(--surf);border:1px solid var(--border);border-radius:var(--r16);box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:22px}
+.fp-hd{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.fp-title{font-size:13px;font-weight:800;color:var(--ink)}
+.fp-body{padding:20px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--ink2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r8);font-size:13px;color:var(--ink);background:var(--surf);transition:.16s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.field textarea{min-height:180px;resize:vertical;line-height:1.7}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 64px;gap:12px}
+.btn-s{padding:9px 22px;border-radius:var(--r8);font-size:13px;font-weight:700;background:var(--g-blue);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.25);transition:.2s}
+.btn-s:hover{box-shadow:0 6px 22px rgba(37,99,235,.36);transform:translateY(-1px)}
+.btn-c{padding:9px 18px;border-radius:var(--r8);font-size:13px;font-weight:700;background:var(--bg);color:var(--ink2);border:1.5px solid var(--border)}
+.btn-c:hover{background:var(--bg2)}
+.factions{display:flex;gap:10px;align-items:center;margin-top:6px}
+.fmsg{font-size:12px;color:var(--green);font-weight:700}
+
+/* FORMAT BAR */
+.fmt-bar{display:flex;gap:3px;padding:6px 8px;background:var(--bg);border:1.5px solid var(--border);border-bottom:none;border-radius:var(--r8) var(--r8) 0 0;flex-wrap:wrap}
+.fmt-bar button{padding:4px 8px;border-radius:var(--r4);font-size:10px;font-weight:700;border:1.5px solid var(--border);background:var(--surf);color:var(--ink2);transition:.14s}
+.fmt-bar button:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.fmt-bar .sp{width:1px;background:var(--border);margin:0 2px;align-self:stretch}
+.txt-a{border-radius:0 0 var(--r8) var(--r8)!important;border-top:1.5px solid var(--border)!important}
+
+/* THUMBNAIL */
+.thumb-area{border:2px dashed var(--border);border-radius:var(--r12);height:140px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+.thumb-area:hover{border-color:var(--blue);background:var(--blue-lt)}
+.thumb-prev{position:absolute;inset:0}
+.thumb-prev img{width:100%;height:100%;object-fit:cover}
+.thumb-prev-ov{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:.18s}
+.thumb-area:hover .thumb-prev-ov{opacity:1}
+.thumb-ph{text-align:center;position:relative;z-index:0}
+.thumb-ph-ico{font-size:28px;opacity:.3;margin-bottom:6px}
+.thumb-ph-txt{font-size:12px;color:var(--ink3);font-weight:600}
+
+/* UNLOCK SECTION */
+.unlock-topic-item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:var(--r8);border:1px solid var(--border);margin-bottom:6px;background:var(--surf);transition:.16s}
+.unlock-topic-item:hover{border-color:var(--blue-lt);background:var(--blue-lt)}
+.uti-em{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.uti-name{font-size:13px;font-weight:700;flex:1}
+.uti-mod{font-size:11px;color:var(--ink3)}
+
+/* CONFIRM */
+.confirm-ov{position:fixed;inset:0;z-index:999;background:rgba(15,23,42,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center}
+.confirm-ov.show{display:flex}
+.confirm-box{background:var(--surf);border-radius:var(--r20);width:100%;max-width:360px;padding:30px;text-align:center;box-shadow:var(--sh-xl)}
+.c-ico2{font-size:40px;margin-bottom:12px}
+.c-title2{font-size:15px;font-weight:800;margin-bottom:6px}
+.c-sub2{font-size:12px;color:var(--ink2);margin-bottom:22px;line-height:1.6}
+.cbns{display:flex;gap:10px;justify-content:center}
+.btn-cx{padding:9px 22px;border-radius:var(--r8);font-size:13px;font-weight:700;background:var(--bg);color:var(--ink2);border:1.5px solid var(--border)}
+.btn-del{padding:9px 22px;border-radius:var(--r8);font-size:13px;font-weight:700;background:var(--red);color:#fff}
+.btn-del:hover{background:#b91c1c}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:var(--r8);font-size:12px;font-weight:700;box-shadow:var(--sh-lg);display:none;align-items:center;gap:7px}
+.toast.show{display:flex;animation:tin .25s ease}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.t-ok{background:var(--green-lt);color:#14532d;border:1px solid #bbf7d0}
+.t-err{background:var(--red-lt);color:#7f1d1d;border:1px solid #fecaca}
+.t-info{background:var(--blue-lt);color:var(--blue-dk);border:1px solid #bfdbfe}
+
+.empty{padding:40px 20px;text-align:center;border:2px dashed var(--border);border-radius:var(--r16)}
+.empty-ico{font-size:28px;opacity:.2;margin-bottom:8px}
+.empty-t{font-size:13px;font-weight:700;color:var(--ink2)}
+.nbtn{display:flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r99);font-size:12px;font-weight:700;transition:.2s;text-decoration:none}
+.nbtn-ghost{border:1.5px solid var(--border);color:var(--ink2)}.nbtn-ghost:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.nbtn-solid{background:var(--g-blue);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.25)}
+
+/* SLIDES */
+.slide-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:.16s;box-shadow:var(--sh-sm)}
+.slide-card:hover{border-color:var(--blue-lt);transform:translateX(2px)}
+.slide-order{width:28px;height:28px;border-radius:50%;background:var(--g-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.slide-info{flex:1;min-width:0}
+.slide-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slide-sub{font-size:11px;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-width:900px){.admin-wrap{grid-template-columns:1fr}.admin-sb{display:none}.fr2,.fr3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="vLogin" class="view on">
+  <div class="login-page">
+    <div class="login-bg"></div><div class="login-dots"></div>
+    <div class="login-wrap">
+      <div class="login-brand">
+        <div class="login-mark">⚙️</div>
+        <div class="login-name">Admin Panel</div>
+        <div class="login-sub">Sonu Sir's Classes</div>
+      </div>
+      <div class="login-card">
+        <div class="login-err" id="lErr">❌ Email या Password गलत है!</div>
+        <div class="lf"><label>Email ID</label><input type="email" id="lEmail" placeholder="Enter your email id"></div>
+        <div class="lf"><label>Password</label><input type="password" id="lPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<button class="login-btn" onclick="doLogin()">Admin Login</button>
+  <button class="back-btn" onclick="window.location.href='index.html'">Public Site</button>
+  <div style="text-align:center;margin-top:16px">
+    <a href="#" onclick="showRecovery()" style="font-size:11px;color:rgba(255,255,255,.4);text-decoration:none">Password bhul gaye?</a>
+  </div>
+  </div>
+  
+  <!-- Recovery Panel -->
+  <div id="recoveryPanel" style="display:none;margin-top:16px">
+  <div class="login-card">
+    <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:12px">Password Recovery</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.5">
+      Master Email aur Recovery Key enter karein. Agar aap owner hain to aapko access mil jayega.
+    </div>
+    <div class="lf"><label>Master Email</label><input type="email" id="recEmail" placeholder="Enter master email"></div>
+    <div class="lf"><label>Recovery Key</label><input type="password" id="recKey" placeholder="Enter recovery key"></div>
+    <div id="recErr" style="color:#fca5a5;font-size:11px;margin-bottom:10px;display:none">Email ya Key galat hai!</div>
+    <button class="login-btn" onclick="doRecovery()">Verify & Reset</button>
+    <button class="back-btn" onclick="hideRecovery()">Cancel</button>
+  </div>
+  </div>
+  
+  <!-- Reset Password Panel -->
+  <div id="resetPanel" style="display:none;margin-top:16px">
+  <div class="login-card">
+    <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:12px">Set New Password</div>
+    <div class="lf"><label>New Admin Email</label><input type="email" id="newAdminEmail" placeholder="New admin email"></div>
+    <div class="lf"><label>New Password</label><input type="password" id="newAdminPass" placeholder="New password (min 6 chars)"></div>
+    <div class="lf"><label>Confirm Password</label><input type="password" id="newAdminPass2" placeholder="Confirm password"></div>
+    <div id="resetErr" style="color:#fca5a5;font-size:11px;margin-bottom:10px;display:none"></div>
+    <button class="login-btn" onclick="doResetPassword()">Save New Credentials</button>
+  </div>
+  </div>
+  
+  </div>
+  </div>
+  </div>
+
+<!-- ═══ ADMIN ═══ -->
+<div id="vAdmin" class="view">
+  <div class="admin-wrap">
+    <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="admin-sb" id="adminSb">
+      <div class="asb-inner">
+        <div class="asb-brand" style="justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="asb-mark">S</div>
+            <div><div class="asb-name">Sonu Sir's Classes</div><div class="asb-sub">Admin Panel</div></div>
+          </div>
+          <button onclick="closeSidebar()" style="display:none;background:rgba(255,255,255,.1);border:none;color:#fff;padding:6px 10px;border-radius:6px;font-size:14px;cursor:pointer" class="close-sb-btn">X</button>
+        </div>
+        <div class="asb-sec">
+          <div class="asb-lbl">Overview</div>
+          <button class="asb-item on" onclick="aNav(this,'dashP')"><span class="asb-ico">📊</span>Dashboard</button>
+        </div>
+        <div class="asb-sec">
+          <div class="asb-lbl">Content</div>
+          <button class="asb-item" onclick="aNav(this,'coursesP')"><span class="asb-ico">📚</span>Courses<span class="asb-cnt" id="ac">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'modsP')"><span class="asb-ico">🗂</span>Modules<span class="asb-cnt" id="am">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'topicsP')"><span class="asb-ico">📄</span>Topics<span class="asb-cnt" id="at">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'quizP')"><span class="asb-ico">📝</span>Quiz Manager<span class="asb-cnt" id="aqz">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'pdfP')"><span class="asb-ico">📄</span>PDF Library<span class="asb-cnt" id="apdf">0</span></button>
+        </div>
+        <div class="asb-sec">
+          <div class="asb-lbl">Users</div>
+          <button class="asb-item" onclick="aNav(this,'studentsP')"><span class="asb-ico">👨‍🎓</span>Students<span class="asb-cnt" id="astu">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'staffP')"><span class="asb-ico">👨‍🏫</span>Staff<span class="asb-cnt" id="asta">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'batchesP')"><span class="asb-ico">🏷</span>Batches<span class="asb-cnt" id="abat">0</span></button>
+        </div>
+        <div class="asb-sec">
+          <div class="asb-lbl">Site</div>
+          <button class="asb-item" onclick="aNav(this,'slidesP')"><span class="asb-ico">🎠</span>Hero Banners<span class="asb-cnt" id="asl">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'annP')"><span class="asb-ico">📣</span>Announcements<span class="asb-cnt" id="aann">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'noticesP')"><span class="asb-ico">📢</span>Notices<span class="asb-cnt" id="ann">0</span></button>
+          <button class="asb-item" onclick="aNav(this,'customPagesP')"><span class="asb-ico">🌐</span>Custom Pages<span class="asb-cnt" id="acp">0</span></button>
+        </div>
+        <div class="asb-sec">
+          <div class="asb-lbl">Create</div>
+          <button class="asb-item" onclick="aNav(this,'addCourseP');prepCF()"><span class="asb-ico">➕</span>New Course</button>
+          <button class="asb-item" onclick="aNav(this,'addModP');prepMF()"><span class="asb-ico">➕</span>New Module</button>
+          <button class="asb-item" onclick="aNav(this,'addTopicP');prepTF()"><span class="asb-ico">➕</span>New Topic</button>
+          <button class="asb-item" onclick="aNav(this,'addQuizSecP');prepQSF()"><span class="asb-ico">➕</span>New Quiz Section</button>
+          <button class="asb-item" onclick="aNav(this,'addQuizChP');prepQCF()"><span class="asb-ico">➕</span>New Quiz Chapter</button>
+          <button class="asb-item" onclick="aNav(this,'addUserP');prepUF()"><span class="asb-ico">➕</span>New User</button>
+          <button class="asb-item" onclick="aNav(this,'addBatchP');prepBF()"><span class="asb-ico">➕</span>New Batch</button>
+          <button class="asb-item" onclick="aNav(this,'addSlideP');prepSF()"><span class="asb-ico">➕</span>New Banner</button>
+          <button class="asb-item" onclick="aNav(this,'addAnnP');prepAF()"><span class="asb-ico">➕</span>New Announcement</button>
+          <button class="asb-item" onclick="aNav(this,'addPDFP');prepPF()"><span class="asb-ico">➕</span>Add PDF</button>
+          <button class="asb-item" onclick="aNav(this,'addNoticeP');prepNF()"><span class="asb-ico">➕</span>New Notice</button>
+          <button class="asb-item" onclick="aNav(this,'addCustomPageP');prepCPF()"><span class="asb-ico">➕</span>New Custom Page</button>
+        </div>
+<div class="asb-sec">
+  <div class="asb-lbl">Quick</div>
+  <button class="asb-item" onclick="window.open('index.html','_blank')"><span class="asb-ico">🌐</span>Public Site</button>
+  </div>
+  <div class="asb-sec">
+  <div class="asb-lbl">Settings</div>
+  <button class="asb-item" onclick="aNav(this,'settingsP')"><span class="asb-ico">🔐</span>Change Password</button>
+  <button class="asb-item" onclick="aNav(this,'importExportP')"><span class="asb-ico">📥</span>Import/Export</button>
+  </div>
+  </div>
+<div class="asb-foot"><button class="logout-btn" onclick="doLogout()">🚪 Logout</button></div>
+  </aside>
+
+<!-- MAIN -->
+<div class="admin-main">
+  <div class="admin-tb">
+  <button class="mobile-menu-btn" onclick="openSidebar()">Menu</button>
+  <div style="flex:1;min-width:0"><div class="at-title" id="aTopTitle">Dashboard</div><div class="at-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Admin Panel</div></div>
+  <a href="index.html" target="_blank" class="nbtn nbtn-ghost" style="font-size:11px;white-space:nowrap">Site</a>
+      </div>
+      <div class="admin-cnt">
+
+        <!-- DASHBOARD -->
+        <div class="a-panel on" id="dashP">
+          <div class="stats-g" id="dashStats"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" id="dashTbls"></div>
+        </div>
+
+        <!-- COURSES -->
+        <div class="a-panel" id="coursesP">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-s" onclick="aNav(null,'addCourseP');prepCF()">➕ New Course</button></div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">📚 Courses</div><div class="dtw-sub" id="cSub"></div></div></div><div id="cTbl"></div></div>
+        </div>
+
+        <!-- MODULES -->
+        <div class="a-panel" id="modsP">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-s" onclick="aNav(null,'addModP');prepMF()">➕ New Module</button></div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">🗂 Modules</div><div class="dtw-sub" id="mSub"></div></div></div><div id="mTbl"></div></div>
+        </div>
+
+        <!-- TOPICS -->
+        <div class="a-panel" id="topicsP">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-s" onclick="aNav(null,'addTopicP');prepTF()">➕ New Topic</button></div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">📄 Topics</div><div class="dtw-sub" id="tSub"></div></div></div><div id="tTbl"></div></div>
+        </div>
+
+        <!-- PDF -->
+        <div class="a-panel" id="pdfP">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-s" onclick="aNav(null,'addPDFP');prepPF()">➕ Add PDF</button></div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">📄 PDF Library</div></div></div><div id="pdfTbl"></div></div>
+        </div>
+
+        <!-- STUDENTS -->
+        <div class="a-panel" id="studentsP">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" placeholder="Search students..." oninput="filterTable('stuTbl',this.value)" style="padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-size:12px;width:180px">
+              <input type="file" id="studentExcelInput" accept=".csv" style="display:none" onchange="handleStudentExcel(this)">
+              <button class="btn-c" onclick="document.getElementById('studentExcelInput').click()" title="CSV se students bulk import karein">CSV Import</button>
+            </div>
+            <button class="btn-s" onclick="aNav(null,'addUserP');prepUF('student')">+ New Student</button>
+          </div>
+          <!-- Student Excel Import Preview -->
+          <div id="studentExcelPreview" style="display:none;margin-bottom:16px;background:linear-gradient(135deg,#eff6ff 0%,#e0f2fe 100%);border:2px solid #3b82f6;border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div style="font-size:14px;font-weight:700;color:#1e40af">CSV Import Preview</div>
+              <button class="btn-c" onclick="cancelStudentExcel()" style="font-size:11px;padding:5px 12px">Cancel</button>
+            </div>
+            <div style="font-size:12px;color:#1e40af;margin-bottom:12px;padding:10px;background:rgba(255,255,255,.7);border-radius:8px" id="studentExcelInfo"></div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <label style="font-size:12px;font-weight:600;color:#1e3a5f">Batch Select:</label>
+              <select id="studentExcelBatch" style="padding:10px 14px;border:2px solid #3b82f6;border-radius:8px;font-size:13px;font-weight:600;min-width:200px"><option value="">-- Batch Choose Karein --</option></select>
+              <button class="btn-s" onclick="importStudentExcel()" style="padding:10px 20px">Import Students</button>
+            </div>
+            <div style="margin-top:12px;padding:10px;background:rgba(255,255,255,.8);border-radius:8px;font-size:11px;color:#64748b">
+              <b>CSV Format:</b> name, email, password<br>
+              <b>Example:</b> Rahul Kumar, rahul@email.com, pass123<br>
+              <b>Note:</b> Password optional hai - agar nahi diya to auto-generate hoga
+            </div>
+          </div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">Students</div><div class="dtw-sub" id="stuSub"></div></div></div><div class="table-scroll"><table class="dt" id="stuTbl"><tbody></tbody></table></div></div>
+        </div>
+
+        <!-- STAFF -->
+        <div class="a-panel" id="staffP">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-s" onclick="aNav(null,'addUserP');prepUF('staff')">+ New Staff</button></div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">Staff</div></div></div><div id="staffTbl"></div></div>
+        </div>
+
+        <!-- BATCHES -->
+        <div class="a-panel" id="batchesP">
+          <div style="margin-bottom:16px;background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border:1px solid #86efac;border-radius:12px;padding:14px">
+            <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:8px">Batch me Students Add kaise karein?</div>
+            <div style="font-size:11px;color:#15803d;line-height:1.6">
+              <b>Option 1:</b> Students section me jaake "CSV Import" button se bulk import karein<br>
+              <b>Option 2:</b> Students section me "+ New Student" se ek-ek karke add karein<br>
+              <b>Option 3:</b> Neeche batch ke row pe "Add Students" button click karein
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+            <button class="btn-s" onclick="aNav(null,'addBatchP');prepBF()">+ New Batch</button>
+          </div>
+          <div class="dtw"><div class="dtw-hd"><div><div class="dtw-title">Batches</div><div class="dtw-sub" id="batSub"></div></div></div><div id="batTbl"></div></div>
+        </div>
+
+        <!-- SLIDES / HERO BANNERS -->
+        <div class="a-panel" id="slidesP">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:12px;color:var(--ink3)">Min 1, Max 10 banners. Auto-slide every 4 sec.</div>
+            <button class="btn-s" onclick="aNav(null,'addSlideP');prepSF()">➕ New Banner</button>
+          </div>
+          <div id="slidesList"></div>
+        </div>
+
+        <!-- ANNOUNCEMENTS (Ticker) -->
+        <div class="a-panel" id="annP">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:12px;color:var(--ink3)">Ye texts scrolling announcement ticker mein dikhenge</div>
+            <button class="btn-s" onclick="aNav(null,'addAnnP');prepAF()">➕ New Announcement</button>
+          </div>
+          <div id="annList"></div>
+        </div>
+
+        <!-- NOTICES -->
+        <div class="a-panel" id="noticesP">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-s" onclick="aNav(null,'addNoticeP');prepNF()">+ New Notice</button></div>
+          <div id="noticesList"></div>
+        </div>
+
+        <!-- QUIZ MANAGER -->
+        <div class="a-panel" id="quizP">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:12px;color:var(--ink3)">Quiz Sections aur Chapters manage karein</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-c" onclick="aNav(null,'addQuizSecP');prepQSF()">+ Quiz Section</button>
+              <button class="btn-s" onclick="aNav(null,'addQuizChP');prepQCF()">+ Quiz Chapter</button>
+            </div>
+          </div>
+          <div id="quizList"></div>
+        </div>
+
+        <!-- CUSTOM PAGES (Services, About, Other) -->
+        <div class="a-panel" id="customPagesP">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:12px;color:var(--ink3)">Services, About Me, Other tabs ke liye custom pages</div>
+            <button class="btn-s" onclick="aNav(null,'addCustomPageP');prepCPF()">+ New Page</button>
+          </div>
+          <div id="customPagesList"></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="a-panel" id="settingsP">
+          <div style="display:grid;gap:20px;max-width:500px">
+            <!-- About Photo -->
+            <div class="fp">
+              <div class="fp-hd"><div class="fp-title">About Section Photo</div></div>
+              <div class="fp-body">
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+                  <div id="aboutPhotoPreview" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid #e2e8f0">
+                    <span style="font-size:28px;color:rgba(255,255,255,.5)" id="aboutPhotoPlaceholderAdmin">S</span>
+                    <img id="aboutPhotoPreviewImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+                  </div>
+                  <div style="flex:1">
+                    <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px">Your Photo</div>
+                    <div style="font-size:11px;color:var(--ink3)">Landing page About section mein dikhega</div>
+                  </div>
+                </div>
+                <input type="file" id="aboutPhotoInput" accept="image/*" style="display:none" onchange="handleAboutPhoto(this)">
+                <div style="display:flex;gap:8px">
+                  <button class="btn-c" onclick="document.getElementById('aboutPhotoInput').click()">Upload Photo</button>
+                  <button class="btn-c" style="color:#dc2626;border-color:#fecaca" onclick="removeAboutPhoto()">Remove</button>
+                </div>
+              </div>
+            </div>
+<!-- Change Password -->
+  <div class="fp">
+  <div class="fp-hd"><div class="fp-title">Change Admin Password</div></div>
+  <div class="fp-body">
+  <div class="field"><label>Current Password *</label><input type="password" id="pwCurrent" placeholder="Enter current password"></div>
+  <div class="field"><label>New Password *</label><input type="password" id="pwNew" placeholder="Enter new password (min 6 chars)"></div>
+  <div class="field"><label>Confirm New Password *</label><input type="password" id="pwConfirm" placeholder="Re-enter new password"></div>
+  <div class="factions"><button class="btn-s" onclick="changePassword()">Update Password</button><span class="fmsg" id="pwMsg"></span></div>
+  </div>
+  </div>
+  <!-- Master Recovery Info -->
+  <div class="fp" style="border:2px solid #fbbf24;background:#fffbeb">
+  <div class="fp-hd"><div class="fp-title" style="color:#92400e">Master Recovery Info</div></div>
+  <div class="fp-body">
+  <div style="font-size:12px;color:#78350f;line-height:1.6">
+    <p style="margin-bottom:10px"><b>Ye information safe jagah note kar lein:</b></p>
+    <div style="background:#fef3c7;padding:12px;border-radius:8px;margin-bottom:12px">
+      <div style="margin-bottom:8px"><b>Master Email:</b> <code style="background:#fff;padding:2px 8px;border-radius:4px">sonukumar82082@gmail.com</code></div>
+      <div><b>Recovery Key:</b> <code style="background:#fff;padding:2px 8px;border-radius:4px">SONU@MASTER@2025</code></div>
+    </div>
+    <p style="font-size:11px;color:#a16207">Agar koi aapka admin password change kar de ya aap password bhul jaayein, to Master Email + Recovery Key se hamesha access recover kar sakte hain.</p>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+
+        <!-- IMPORT/EXPORT -->
+        <div class="a-panel" id="importExportP">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <!-- EXPORT -->
+            <div class="fp">
+              <div class="fp-hd"><div class="fp-title">📤 Export Data</div></div>
+              <div class="fp-body">
+                <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">Sabhi data (Courses, Modules, Topics, Users, Batches, PDFs, Notices) ko JSON file mein download karein.</p>
+                <button class="btn-s" onclick="exportAllData()" style="width:100%">📥 Download Full Backup</button>
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+                  <p style="font-size:11px;color:var(--ink3);margin-bottom:10px">Ya specific data export karein:</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <button class="btn-c" onclick="exportData('users')" style="font-size:11px">Students CSV</button>
+                    <button class="btn-c" onclick="exportData('courses')" style="font-size:11px">Courses JSON</button>
+                    <button class="btn-c" onclick="exportData('pdfs')" style="font-size:11px">PDFs JSON</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- IMPORT -->
+            <div class="fp">
+              <div class="fp-hd"><div class="fp-title">📥 Import Data</div></div>
+              <div class="fp-body">
+                <p style="font-size:12px;color:var(--ink3);margin-bottom:14px">Exported backup file ya CSV import karein. Ye existing data ke saath merge hoga.</p>
+                <div class="field">
+                  <label>Select File (JSON/CSV)</label>
+                  <input type="file" id="importFile" accept=".json,.csv" style="padding:10px;border:2px dashed var(--line);border-radius:8px;width:100%;cursor:pointer" onchange="previewImport(this)">
+                </div>
+                <div id="importPreview" style="display:none;margin-bottom:14px;padding:12px;background:var(--g-blue);border-radius:8px">
+                  <div style="font-size:12px;font-weight:600;margin-bottom:6px">Preview:</div>
+                  <div id="importInfo" style="font-size:11px;color:var(--ink3)"></div>
+                </div>
+                <button class="btn-s" onclick="doImport()" style="width:100%" id="importBtn" disabled>📤 Import Data</button>
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+                  <p style="font-size:11px;color:var(--ink3);margin-bottom:10px">Students bulk import (CSV format):</p>
+                  <div style="font-size:10px;color:var(--ink4);background:#f8f9fa;padding:8px;border-radius:6px;font-family:monospace">name,email,password,batch<br>Rahul,rahul@test.com,pass123,Morning</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD COURSE -->
+        <div class="a-panel" id="addCourseP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="cfTitle">➕ New Course</div></div><div class="fp-body">
+            <input type="hidden" id="cfId">
+            <div class="field"><label>Thumbnail</label>
+              <div class="thumb-area" id="cThumbArea" onclick="document.getElementById('cThumbInput').click()" style="height:130px">
+                <div class="thumb-prev" id="cThumbPrev" style="display:none"><img id="cThumbImg" src="" alt=""><div class="thumb-prev-ov"><span style="color:#fff;font-size:12px;font-weight:700">Change करें</span></div></div>
+                <div class="thumb-ph" id="cThumbPh"><div class="thumb-ph-ico">🖼</div><div class="thumb-ph-txt">Click करें — JPG/PNG/WebP</div></div>
+              </div>
+              <input type="file" id="cThumbInput" accept="image/*" style="display:none" onchange="handleThumb('c',this)">
+            </div>
+            <div class="fr3">
+              <div class="field" style="grid-column:1/3"><label>Course का नाम *</label><input type="text" id="cfName" placeholder="जैसे: Bihar IT Certificate"></div>
+              <div class="field"><label>Emoji</label><input type="text" id="cfIco" placeholder="🖥️" maxlength="4"></div>
+            </div>
+            <div class="field"><label>Description</label><input type="text" id="cfDesc" placeholder="Short description..."></div>
+            <div class="fr2">
+              <div class="field"><label>Color</label><input type="text" id="cfClr" placeholder="#2563eb"></div>
+              <div class="field"><label>Background</label><input type="text" id="cfBg" placeholder="#eff6ff"></div>
+            </div>
+            <div class="factions"><button class="btn-s" onclick="saveCourse()">💾 Save</button><button class="btn-c" onclick="aNav(null,'coursesP')">Cancel</button><span class="fmsg" id="cfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD MODULE -->
+        <div class="a-panel" id="addModP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="mfTitle">➕ New Module</div></div><div class="fp-body">
+            <input type="hidden" id="mfId">
+            <div class="field"><label>Course *</label><select id="mfCourse"></select></div>
+            <div class="fr3">
+              <div class="field" style="grid-column:1/3"><label>Module का नाम *</label><input type="text" id="mfName" placeholder="Module 1: Introduction"></div>
+              <div class="field"><label>Emoji</label><input type="text" id="mfIco" placeholder="🎯" maxlength="4"></div>
+            </div>
+            <div class="field"><label>Description</label><input type="text" id="mfDesc" placeholder="Description..."></div>
+            <div class="fr2">
+              <div class="field"><label>Color</label><input type="text" id="mfClr" placeholder="#6366f1"></div>
+              <div class="field"><label>Background</label><input type="text" id="mfBg" placeholder="#ede9fe"></div>
+            </div>
+            <div class="factions"><button class="btn-s" onclick="saveModule()">💾 Save</button><button class="btn-c" onclick="aNav(null,'modsP')">Cancel</button><span class="fmsg" id="mfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD TOPIC -->
+        <div class="a-panel" id="addTopicP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="tfTitle">➕ New Topic</div></div><div class="fp-body">
+            <input type="hidden" id="tfId">
+            <div class="fr2">
+              <div class="field"><label>Course *</label><select id="tfCourse" onchange="fillModSel()"></select></div>
+              <div class="field"><label>Module *</label><select id="tfMod"></select></div>
+            </div>
+            <div class="fr3">
+              <div class="field" style="grid-column:1/3"><label>Topic का नाम *</label><input type="text" id="tfName" placeholder="जैसे: कंप्यूटर का परिचय"></div>
+              <div class="field"><label>Emoji</label><input type="text" id="tfEmoji" placeholder="📖" maxlength="4"></div>
+            </div>
+            <div class="field"><label>📝 Notes</label>
+              <div class="fmt-bar">
+                <button onclick="fmt('h1')"># H1</button><button onclick="fmt('h2')">## H2</button><button onclick="fmt('h3')">### H3</button>
+                <div class="sp"></div>
+                <button onclick="fmt('b')"><b>Bold</b></button><button onclick="fmt('ul')">• List</button><button onclick="fmt('ol')">1. List</button><button onclick="fmt('tbl')">⊞ Table</button>
+                <div class="sp"></div>
+                <button onclick="fmt('tip')" style="color:var(--blue)">💡</button><button onclick="fmt('imp')" style="color:var(--yellow)">⭐</button><button onclick="fmt('eg')" style="color:var(--green)">✅</button><button onclick="fmt('div')">―</button>
+              </div>
+              <textarea id="tfNotes" class="txt-a" placeholder="# Heading&#10;## Sub&#10;- bullet&#10;**bold**&#10;💡 Tip&#10;⭐ Important&#10;✅ Example"></textarea>
+            </div>
+            <div class="field"><label>🎯 Canva PPT Link</label><input type="url" id="tfPPT" placeholder="https://www.canva.com/design/..."></div>
+            <div class="factions"><button class="btn-s" onclick="saveTopic()">💾 Save</button><button class="btn-c" onclick="aNav(null,'topicsP')">Cancel</button><span class="fmsg" id="tfMsg"></span></div>
+          </div></div>
+        </div>
+
+<!-- ADD USER -->
+<div class="a-panel" id="addUserP">
+  <div class="fp"><div class="fp-hd"><div class="fp-title" id="ufTitle">+ New User</div></div><div class="fp-body">
+  <input type="hidden" id="ufId">
+  <div class="field"><label>Role *</label><select id="ufRole" onchange="toggleStaffPhoto()"><option value="student">Student</option><option value="staff">Staff</option></select></div>
+  <!-- Staff Photo Field -->
+  <div class="field" id="ufPhotoField" style="display:none">
+    <label>Profile Photo</label>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div id="ufPhotoPreview" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #e2e8f0">
+        <span style="font-size:20px;color:rgba(255,255,255,.5)" id="ufPhotoPlaceholder">S</span>
+        <img id="ufPhotoImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+      </div>
+      <div style="flex:1">
+        <input type="file" id="ufPhotoInput" accept="image/*" style="display:none" onchange="handleStaffPhoto(this)">
+        <button type="button" class="btn-c" style="font-size:11px;padding:6px 12px" onclick="document.getElementById('ufPhotoInput').click()">Upload Photo</button>
+        <button type="button" class="btn-c" style="font-size:11px;padding:6px 8px;color:#dc2626;border-color:#fecaca;margin-left:4px" onclick="removeStaffPhoto()">Remove</button>
+      </div>
+    </div>
+  </div>
+  <div class="fr2">
+  <div class="field"><label>Full Name *</label><input type="text" id="ufName" placeholder="Naam likhein"></div>
+  <div class="field"><label>Email ID *</label><input type="email" id="ufEmail" placeholder="email@example.com"></div>
+  </div>
+  <div class="field"><label>Password * (min 6 chars)</label><input type="text" id="ufPass" placeholder="Password set karein"></div>
+  <div class="field" id="ufBatchField">
+    <label>Batch Select Karein *</label>
+    <select id="ufBatch"><option value="">-- Batch Choose Karein --</option></select>
+    <div style="font-size:10px;color:var(--ink3);margin-top:4px">Student ko batch assign karna zaroori hai course access ke liye</div>
+  </div>
+  <div class="factions"><button class="btn-s" onclick="saveUser()">Save</button><button class="btn-c" onclick="aNav(null,'studentsP')">Cancel</button><span class="fmsg" id="ufMsg"></span></div>
+  </div></div>
+  </div>
+
+        <!-- ADD BATCH -->
+        <div class="a-panel" id="addBatchP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="bfTitle">➕ New Batch</div></div><div class="fp-body">
+            <input type="hidden" id="bfId">
+            <div class="fr2">
+              <div class="field"><label>Batch का नाम *</label><input type="text" id="bfName" placeholder="जैसे: Batch 2025-A"></div>
+              <div class="field"><label>Course Assign *</label><select id="bfCourse"></select></div>
+            </div>
+            <div class="field"><label>Description</label><input type="text" id="bfDesc" placeholder="Morning batch, evening batch..."></div>
+            <div class="factions"><button class="btn-s" onclick="saveBatch()">💾 Save</button><button class="btn-c" onclick="aNav(null,'batchesP')">Cancel</button><span class="fmsg" id="bfMsg"></span></div>
+          </div></div>
+
+          <!-- UNLOCK TOPICS per batch -->
+          <div class="fp" id="unlockSection" style="display:none">
+            <div class="fp-hd"><div class="fp-title">🔓 Topics Unlock करें</div></div>
+            <div class="fp-body">
+              <div style="font-size:12px;color:var(--ink3);margin-bottom:14px">इस batch के students के लिए topics unlock/lock करें</div>
+              <div id="unlockTopicList"></div>
+              <div class="factions" style="margin-top:12px"><button class="btn-s" onclick="saveUnlock()">💾 Save Unlock</button><span class="fmsg" id="ulMsg"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD SLIDE -->
+        <div class="a-panel" id="addSlideP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="sfTitle">➕ New Slide</div></div><div class="fp-body">
+            <input type="hidden" id="sfId">
+            <div class="field"><label>Background Image</label>
+              <div class="thumb-area" id="sThumbArea" onclick="document.getElementById('sThumbInput').click()">
+                <div class="thumb-prev" id="sThumbPrev" style="display:none"><img id="sThumbImg" src="" alt=""><div class="thumb-prev-ov"><span style="color:#fff;font-size:12px;font-weight:700">Change</span></div></div>
+                <div class="thumb-ph" id="sThumbPh"><div class="thumb-ph-ico">🖼</div><div class="thumb-ph-txt">Background image (optional)</div></div>
+              </div>
+              <input type="file" id="sThumbInput" accept="image/*" style="display:none" onchange="handleThumb('s',this)">
+            </div>
+            <div class="field"><label>Badge Text</label><input type="text" id="sfBadge" placeholder="जैसे: New Batch Starting"></div>
+            <div class="field"><label>Main Title *</label><input type="text" id="sfTitle2" placeholder="Hero मुख्य heading"></div>
+            <div class="field"><label>Subtitle</label><input type="text" id="sfSub" placeholder="Subheading..."></div>
+            <div class="fr2">
+              <div class="field"><label>Primary Button</label><input type="text" id="sfBtn1" placeholder="Course देखें"></div>
+              <div class="field"><label>Secondary Button</label><input type="text" id="sfBtn2" placeholder="Login करें (optional)"></div>
+            </div>
+            <div class="field"><label>Order (1-10)</label><input type="number" id="sfOrder" min="1" max="10" placeholder="1"></div>
+            <div class="factions"><button class="btn-s" onclick="saveSlide()">💾 Save</button><button class="btn-c" onclick="aNav(null,'slidesP')">Cancel</button><span class="fmsg" id="sfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD ANNOUNCEMENT -->
+        <div class="a-panel" id="addAnnP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="afTitle">+ New Announcement</div></div><div class="fp-body">
+            <input type="hidden" id="afId">
+            <div class="field"><label>Announcement Text *</label><input type="text" id="afText" placeholder="jaise: New Batch Starting from 15 Jan!"></div>
+            <div style="font-size:11px;color:var(--ink3);margin-bottom:12px">Yeh text homepage ke top ticker mein scroll karega</div>
+            <div class="factions"><button class="btn-s" onclick="saveAnn()">Save</button><button class="btn-c" onclick="aNav(null,'annP')">Cancel</button><span class="fmsg" id="afMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD QUIZ SECTION -->
+        <div class="a-panel" id="addQuizSecP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="qsfTitle">+ New Quiz Section</div></div><div class="fp-body">
+            <input type="hidden" id="qsfId">
+            <div class="field"><label>Course *</label><select id="qsfCourse"><option value="">-- Select Course --</option></select></div>
+            <div class="field"><label>Section Name *</label><input type="text" id="qsfName" placeholder="jaise: Computer Fundamentals Quiz"></div>
+            <div class="field"><label>Order</label><input type="number" id="qsfOrder" min="1" placeholder="1"></div>
+            <div class="factions"><button class="btn-s" onclick="saveQuizSec()">Save</button><button class="btn-c" onclick="aNav(null,'quizP')">Cancel</button><span class="fmsg" id="qsfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD QUIZ CHAPTER -->
+        <div class="a-panel" id="addQuizChP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="qcfTitle">+ New Quiz Chapter</div></div><div class="fp-body">
+            <input type="hidden" id="qcfId">
+            <div class="field"><label>Quiz Section *</label><select id="qcfSec"><option value="">-- Select Section --</option></select></div>
+            <div class="field"><label>Chapter Name *</label><input type="text" id="qcfName" placeholder="jaise: Chapter 1 Quiz"></div>
+            <div class="field"><label>Order</label><input type="number" id="qcfOrder" min="1" placeholder="1"></div>
+            <div class="field">
+              <label>Quiz Code (JSON or HTML) *</label>
+              <textarea id="qcfCode" rows="10" placeholder='JSON format:
+{"title":"Quiz Title","questions":[{"q":"Question?","options":["A","B","C","D"],"ans":0}]}
+
+Ya HTML code paste karein (iframe, embed etc.)'></textarea>
+            </div>
+            <div style="font-size:11px;color:var(--ink3);margin-bottom:12px;background:#f0fdf4;padding:10px;border-radius:8px">
+              <b>JSON Quiz Format:</b><br>
+              {"questions":[{"q":"Sawaal?","options":["Option A","Option B","Option C","Option D"],"ans":0}]}<br>
+              <b>ans</b> = correct option ka index (0=A, 1=B, 2=C, 3=D)
+            </div>
+            <div class="factions"><button class="btn-s" onclick="saveQuizCh()">Save</button><button class="btn-c" onclick="aNav(null,'quizP')">Cancel</button><span class="fmsg" id="qcfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD CUSTOM PAGE -->
+        <div class="a-panel" id="addCustomPageP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="cpfTitle">+ New Custom Page</div></div><div class="fp-body">
+            <input type="hidden" id="cpfId">
+            <div class="field"><label>Page Category *</label>
+              <select id="cpfCategory">
+                <option value="">-- Select Category --</option>
+                <option value="services">Services</option>
+                <option value="about">About Me</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Page Title *</label><input type="text" id="cpfTitle2" placeholder="jaise: Web Development Course"></div>
+            <div class="field"><label>Short Description</label><input type="text" id="cpfDesc" placeholder="Brief description..."></div>
+            <div class="field"><label>Order</label><input type="number" id="cpfOrder" min="1" placeholder="1"></div>
+            <div class="field">
+              <label>Page HTML Code *</label>
+              <textarea id="cpfCode" rows="12" placeholder='Yahan apna HTML code paste karein...
+Ye code directly render hoga page mein.
+
+Example:
+<div style="padding:20px">
+  <h2>Page Title</h2>
+  <p>Content here...</p>
+  <img src="image-url.jpg">
+</div>'></textarea>
+            </div>
+            <div style="font-size:11px;color:var(--ink3);margin-bottom:12px;background:#eff6ff;padding:10px;border-radius:8px">
+              Aap kisi bhi website ka HTML code yahan paste kar sakte hain. Ye code Services/About/Other tab mein show hoga.
+            </div>
+            <div class="factions"><button class="btn-s" onclick="saveCustomPage()">Save</button><button class="btn-c" onclick="aNav(null,'customPagesP')">Cancel</button><span class="fmsg" id="cpfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD PDF -->
+        <div class="a-panel" id="addPDFP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="pfTitle">➕ Add PDF</div></div><div class="fp-body">
+            <input type="hidden" id="pfId">
+            <div class="field"><label>PDF Name *</label><input type="text" id="pfName" placeholder="PDF का नाम"></div>
+            <div class="fr2">
+              <div class="field"><label>Category</label><input type="text" id="pfCat" placeholder="जैसे: Computer, MS Office"></div>
+              <div class="field"><label>Size (optional)</label><input type="text" id="pfSize" placeholder="जैसे: 2.5 MB"></div>
+            </div>
+            <div class="field"><label>PDF URL (Google Drive/Direct link)</label><input type="url" id="pfUrl" placeholder="https://drive.google.com/..."></div>
+            <div style="text-align:center;font-size:12px;color:var(--ink3);margin:10px 0">— या —</div>
+            <div class="field"><label>PDF File Upload</label>
+              <div class="thumb-area" onclick="document.getElementById('pfInput').click()" style="height:80px">
+                <div class="thumb-ph"><div style="font-size:22px;opacity:.3;margin-bottom:4px">📄</div><div class="thumb-ph-txt" id="pfFileName">PDF file select करें</div></div>
+              </div>
+              <input type="file" id="pfInput" accept="application/pdf" style="display:none" onchange="handlePDF(this)">
+            </div>
+            <div class="factions"><button class="btn-s" onclick="savePDF()">💾 Save</button><button class="btn-c" onclick="aNav(null,'pdfP')">Cancel</button><span class="fmsg" id="pfMsg"></span></div>
+          </div></div>
+        </div>
+
+        <!-- ADD NOTICE -->
+        <div class="a-panel" id="addNoticeP">
+          <div class="fp"><div class="fp-hd"><div class="fp-title" id="nfTitle">➕ New Notice</div></div><div class="fp-body">
+            <input type="hidden" id="nfId">
+            <div class="field"><label>Title *</label><input type="text" id="nfTitle2" placeholder="Notice का title"></div>
+            <div class="field"><label>Description</label><textarea id="nfDesc" style="min-height:100px" placeholder="Details..."></textarea></div>
+            <div class="fr2">
+              <div class="field"><label>Date</label><input type="text" id="nfDate" placeholder="जैसे: 15 Jan 2025"></div>
+              <div class="field"><label>Important?</label><select id="nfImp"><option value="false">Normal</option><option value="true">⭐ Important</option></select></div>
+            </div>
+            <div class="factions"><button class="btn-s" onclick="saveNotice()">💾 Save</button><button class="btn-c" onclick="aNav(null,'noticesP')">Cancel</button><span class="fmsg" id="nfMsg"></span></div>
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-ov" id="cOv">
+  <div class="confirm-box">
+    <div class="c-ico2">🗑️</div>
+    <div class="c-title2" id="cTitle">Delete करें?</div>
+    <div class="c-sub2" id="cSub2">यह permanently delete हो जाएगा।</div>
+    <div class="cbns"><button class="btn-cx" onclick="cl('cOv')">Cancel</button><button class="btn-del" id="cBtn">Delete</button></div>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+
+<script>
+  /* ════ FIREBASE CONFIG ════ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyBHmqh8J9ZhfXAMOvEeSO_kOlMLnIuCQDs",
+    authDomain: "sonu-sirs-classes.firebaseapp.com",
+    projectId: "sonu-sirs-classes",
+    storageBucket: "sonu-sirs-classes.firebasestorage.app",
+    messagingSenderId: "180668455966",
+    appId: "1:180668455966:web:22e7951ede102938d9220f"
+  };
+  
+  // Initialize Firebase
+  let db;
+  let firebaseReady = false;
+  
+  try {
+    if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      firebaseReady = true;
+      console.log("[v0] Admin: Firebase connected!");
+    } else {
+      console.log("[v0] Admin: Firebase not configured - using localStorage");
+    }
+  } catch(e) {
+    console.log("[v0] Admin: Firebase init error:", e);
+  }
+  
+  /* ════ STORE ════ */
+  const K={c:'courses',m:'modules',t:'topics',users:'users',batches:'batches',slides:'slides',pdfs:'pdfs',notices:'notices',announcements:'announcements',quizSecs:'quizSecs',quizChs:'quizChs',customPages:'customPages',siteSettings:'siteSettings'};
+  
+  // LocalStorage functions
+  const loadLocal=k=>JSON.parse(localStorage.getItem('ssc_'+k)||'[]');
+  const saveLocal=(k,v)=>localStorage.setItem('ssc_'+k,JSON.stringify(v));
+  
+  // Firebase load function
+  async function loadFirebase(collection) {
+    if(!firebaseReady) return loadLocal(collection);
+    try {
+      const snapshot = await db.collection(collection).get();
+      const data = [];
+      snapshot.forEach(doc => data.push({...doc.data(), _docId: doc.id}));
+      return data;
+    } catch(e) {
+      console.log("[v0] Firebase load error:", e);
+      return loadLocal(collection);
+    }
+  }
+  
+  // Firebase save function
+  async function saveFirebase(collection, dataArray) {
+    saveLocal(collection, dataArray); // Always backup to localStorage
+    if(!firebaseReady) return;
+    try {
+      const batch = db.batch();
+      const existing = await db.collection(collection).get();
+      existing.forEach(doc => batch.delete(doc.ref));
+      dataArray.forEach(item => {
+        const docRef = db.collection(collection).doc(item.id || item._docId || db.collection(collection).doc().id);
+        const cleanItem = {...item};
+        delete cleanItem._docId;
+        batch.set(docRef, cleanItem);
+      });
+      await batch.commit();
+      console.log("[v0] Saved to Firebase:", collection);
+    } catch(e) {
+      console.log("[v0] Firebase save error:", e);
+    }
+  }
+  
+  // Wrapper functions
+  const load = k => loadLocal(k);
+  const save = (k,v) => { saveLocal(k,v); saveFirebase(k,v); };
+  
+  let courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages;
+  
+  function reloadAll(){
+    courses=loadLocal(K.c);modules=loadLocal(K.m);topics=loadLocal(K.t);users=loadLocal(K.users);
+    batches=loadLocal(K.batches);slides=loadLocal(K.slides);pdfs=loadLocal(K.pdfs);notices=loadLocal(K.notices);
+    announcements=loadLocal(K.announcements);quizSecs=loadLocal(K.quizSecs);quizChs=loadLocal(K.quizChs);customPages=loadLocal(K.customPages);
+  }
+  
+  // Async reload from Firebase
+  async function reloadFromFirebase(){
+    if(!firebaseReady) { reloadAll(); return; }
+    try {
+      [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages] = await Promise.all([
+        loadFirebase(K.c), loadFirebase(K.m), loadFirebase(K.t), loadFirebase(K.users), loadFirebase(K.batches),
+        loadFirebase(K.slides), loadFirebase(K.pdfs), loadFirebase(K.notices), loadFirebase(K.announcements),
+        loadFirebase(K.quizSecs), loadFirebase(K.quizChs), loadFirebase(K.customPages)
+      ]);
+      // Backup to localStorage
+      saveLocal(K.c,courses);saveLocal(K.m,modules);saveLocal(K.t,topics);saveLocal(K.users,users);
+      saveLocal(K.batches,batches);saveLocal(K.slides,slides);saveLocal(K.pdfs,pdfs);saveLocal(K.notices,notices);
+      saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);saveLocal(K.customPages,customPages);
+      console.log("[v0] Admin data synced from Firebase");
+    } catch(e) {
+      console.log("[v0] Firebase sync error:", e);
+      reloadAll();
+    }
+  }
+  
+  reloadAll();
+  
+  // Initial Firebase sync
+  if(firebaseReady) {
+    reloadFromFirebase().then(() => {
+      updateCounts();
+      console.log("[v0] Admin UI refreshed with Firebase data");
+    });
+  }
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+/* Mobile Sidebar */
+function openSidebar(){
+  document.getElementById('adminSb').classList.add('open');
+  document.getElementById('sbOverlay').classList.add('show');
+  document.querySelector('.close-sb-btn').style.display='block';
+}
+function closeSidebar(){
+  document.getElementById('adminSb').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('show');
+  document.querySelector('.close-sb-btn').style.display='none';
+}
+
+/* Thumb B64 */
+let cThumbB64='',sThumbB64='',pdfB64='';
+
+/* ════ AUTH ════ */
+// Master Admin - ye kabhi change nahi hoga
+const MASTER_EMAIL='sonukumar82082@gmail.com';
+const MASTER_RECOVERY_KEY='SONU@MASTER@2025';
+const ADMIN_EMAIL='admin@kyp.com',ADMIN_PASS='admin@2025';
+
+function doLogin(){
+  const e=document.getElementById('lEmail').value.trim().toLowerCase();
+  const p=document.getElementById('lPass').value;
+  const err=document.getElementById('lErr');
+  const storedPass=localStorage.getItem('ssc_admin_pass')||ADMIN_PASS;
+  const storedEmail=localStorage.getItem('ssc_admin_email')||ADMIN_EMAIL;
+  
+  // Master email se login - hamesha work karega
+  if(e===MASTER_EMAIL.toLowerCase() && p===MASTER_RECOVERY_KEY){
+    err.classList.remove('show');
+    document.getElementById('vLogin').classList.remove('on');
+    document.getElementById('vAdmin').classList.add('on');
+    renderAdmin();
+    toast('Master Admin Login Success!','ok');
+    return;
+  }
+  
+  // Normal admin login
+  if(e===storedEmail.toLowerCase() && p===storedPass){
+    err.classList.remove('show');
+    document.getElementById('vLogin').classList.remove('on');
+    document.getElementById('vAdmin').classList.add('on');
+    renderAdmin();
+  } else {
+    err.classList.add('show');
+    document.getElementById('lPass').value='';
+  }
+}
+
+// Recovery Functions
+function showRecovery(){
+  document.querySelector('.login-card').style.display='none';
+  document.getElementById('recoveryPanel').style.display='block';
+  document.getElementById('resetPanel').style.display='none';
+}
+
+function hideRecovery(){
+  document.querySelector('.login-card').style.display='block';
+  document.getElementById('recoveryPanel').style.display='none';
+  document.getElementById('resetPanel').style.display='none';
+}
+
+function doRecovery(){
+  const email=document.getElementById('recEmail').value.trim().toLowerCase();
+  const key=document.getElementById('recKey').value;
+  const err=document.getElementById('recErr');
+  
+  if(email===MASTER_EMAIL.toLowerCase() && key===MASTER_RECOVERY_KEY){
+    err.style.display='none';
+    document.getElementById('recoveryPanel').style.display='none';
+    document.getElementById('resetPanel').style.display='block';
+    document.getElementById('newAdminEmail').value=localStorage.getItem('ssc_admin_email')||ADMIN_EMAIL;
+  } else {
+    err.style.display='block';
+  }
+}
+
+function doResetPassword(){
+  const email=document.getElementById('newAdminEmail').value.trim();
+  const pass=document.getElementById('newAdminPass').value;
+  const pass2=document.getElementById('newAdminPass2').value;
+  const err=document.getElementById('resetErr');
+  
+  if(!email || !pass){
+    err.textContent='Email aur Password zaroori hai!';
+    err.style.display='block';
+    return;
+  }
+  if(pass.length<6){
+    err.textContent='Password kam se kam 6 characters ka hona chahiye!';
+    err.style.display='block';
+    return;
+  }
+  if(pass!==pass2){
+    err.textContent='Dono password match nahi kar rahe!';
+    err.style.display='block';
+    return;
+  }
+  
+  // Save new credentials
+  localStorage.setItem('ssc_admin_email', email);
+  localStorage.setItem('ssc_admin_pass', pass);
+  
+  // Also save to Firebase if available
+  if(firebaseReady){
+    db.collection('adminSettings').doc('credentials').set({
+      email: email,
+      pass: pass,
+      updatedAt: new Date().toISOString()
+    });
+  }
+  
+  err.style.display='none';
+  alert('Password successfully reset ho gaya! Ab naye credentials se login karein.');
+  hideRecovery();
+  document.getElementById('lEmail').value=email;
+  document.getElementById('lPass').value='';
+}
+function doLogout(){
+  document.getElementById('vAdmin').classList.remove('on');
+  document.getElementById('vLogin').classList.add('on');
+  document.getElementById('lPass').value='';
+  toast('Logged out','ok');
+}
+
+/* ════ ADMIN NAV ════ */
+function aNav(btn,pid){
+  reloadAll();
+  document.querySelectorAll('.asb-item').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  document.querySelectorAll('.a-panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById(pid)?.classList.add('on');
+  const titles={dashP:'Dashboard',coursesP:'Courses',modsP:'Modules',topicsP:'Topics',studentsP:'Students',staffP:'Staff',batchesP:'Batches',slidesP:'Hero Banners',annP:'Announcements',noticesP:'Notices',pdfP:'PDF Library',quizP:'Quiz Manager',customPagesP:'Custom Pages',settingsP:'Change Password',importExportP:'Import/Export Data',addCourseP:'Course Add/Edit',addModP:'Module Add/Edit',addTopicP:'Topic Add/Edit',addUserP:'User Add/Edit',addBatchP:'Batch Add/Edit',addSlideP:'Banner Add/Edit',addAnnP:'Announcement Add/Edit',addPDFP:'PDF Add',addNoticeP:'Notice Add/Edit',addQuizSecP:'Quiz Section Add/Edit',addQuizChP:'Quiz Chapter Add/Edit',addCustomPageP:'Custom Page Add/Edit'};
+  document.getElementById('aTopTitle').textContent=titles[pid]||'Admin';
+  renderPanel(pid);
+  closeSidebar();
+}
+
+function renderAdmin(){updateCounts();renderPanel('dashP');fillSelects()}
+
+function updateCounts(){
+  reloadAll();
+  document.getElementById('ac').textContent=courses.length;
+  document.getElementById('am').textContent=modules.length;
+  document.getElementById('at').textContent=topics.length;
+  document.getElementById('astu').textContent=users.filter(u=>u.role==='student').length;
+  document.getElementById('asta').textContent=users.filter(u=>u.role==='staff').length;
+  document.getElementById('abat').textContent=batches.length;
+  document.getElementById('asl').textContent=slides.length;
+  document.getElementById('aann').textContent=announcements.length;
+  document.getElementById('ann').textContent=notices.length;
+  document.getElementById('apdf').textContent=pdfs.length;
+  document.getElementById('aqz').textContent=quizChs.length;
+  document.getElementById('acp').textContent=customPages.length;
+}
+
+function renderPanel(pid){
+  if(pid==='dashP')renderDash();
+  else if(pid==='coursesP')renderCTbl();
+  else if(pid==='modsP')renderMTbl();
+  else if(pid==='topicsP')renderTTbl();
+  else if(pid==='studentsP')renderStuTbl();
+  else if(pid==='staffP')renderStaffTbl();
+  else if(pid==='batchesP')renderBatTbl();
+  else if(pid==='slidesP')renderSlidesList();
+  else if(pid==='annP')renderAnnList();
+  else if(pid==='noticesP')renderNoticesList();
+  else if(pid==='pdfP')renderPDFTbl();
+  else if(pid==='quizP')renderQuizList();
+  else if(pid==='customPagesP')renderCustomPagesList();
+else if(pid==='settingsP')loadAboutPhotoAdmin();
+}
+
+/* ════ DASHBOARD ════ */
+function renderDash(){
+  reloadAll();
+  document.getElementById('dashStats').innerHTML=`
+    <div class="sc"><div class="sc-ico" style="background:#eff6ff">📚</div><div class="sc-n">${courses.length}</div><div class="sc-l">Courses</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#ede9fe">🗂</div><div class="sc-n">${modules.length}</div><div class="sc-l">Modules</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#f0fdf4">📄</div><div class="sc-n">${topics.length}</div><div class="sc-l">Topics</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#fffbeb">👨‍🎓</div><div class="sc-n">${users.filter(u=>u.role==='student').length}</div><div class="sc-l">Students</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#f0fdf4">👨‍🏫</div><div class="sc-n">${users.filter(u=>u.role==='staff').length}</div><div class="sc-l">Staff</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#fff7ed">🏷</div><div class="sc-n">${batches.length}</div><div class="sc-l">Batches</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#e0f2fe">🎠</div><div class="sc-n">${slides.length}</div><div class="sc-l">Hero Banners</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#fef2f2">📄</div><div class="sc-n">${pdfs.length}</div><div class="sc-l">PDFs</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#fef9c3">📣</div><div class="sc-n">${announcements.length}</div><div class="sc-l">Announcements</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#fef9c3">📢</div><div class="sc-n">${notices.length}</div><div class="sc-l">Notices</div></div>
+  `;
+  document.getElementById('dashTbls').innerHTML=`
+    <div class="dtw">
+      <div class="dtw-hd"><div><div class="dtw-title">👨‍🎓 Recent Students</div></div><button class="btn-s" style="font-size:11px;padding:5px 13px" onclick="aNav(null,'addUserP');prepUF('student')">➕ Add</button></div>
+      <table class="dt"><thead><tr><th>Name</th><th>Email</th><th>Batch</th></tr></thead><tbody>
+        ${users.filter(u=>u.role==='student').slice(0,5).map(u=>{const b=batches.find(x=>x.id===u.batchId);return`<tr><td class="bold">${u.name}</td><td>${u.email}</td><td><span class="bp bp-b">${b?.name||'—'}</span></td></tr>`}).join('')}
+        ${!users.filter(u=>u.role==='student').length?'<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--ink3)">कोई student नहीं</td></tr>':''}
+      </tbody></table>
+    </div>
+    <div class="dtw">
+      <div class="dtw-hd"><div><div class="dtw-title">🏷 Batches</div></div><button class="btn-s" style="font-size:11px;padding:5px 13px" onclick="aNav(null,'addBatchP');prepBF()">➕ Add</button></div>
+      <table class="dt"><thead><tr><th>Batch</th><th>Course</th><th>Unlocked</th><th>Students</th></tr></thead><tbody>
+        ${batches.map(b=>{const c=courses.find(x=>x.id===b.courseId);const stus=users.filter(u=>u.batchId===b.id).length;return`<tr><td class="bold">${b.name}</td><td><span class="bp bp-b">${c?.name||'—'}</span></td><td><span class="bp bp-g">${(b.unlockedTopics||[]).length}</span></td><td>${stus}</td></tr>`}).join('')}
+        ${!batches.length?'<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink3)">कोई batch नहीं</td></tr>':''}
+      </tbody></table>
+    </div>
+  `;
+}
+
+/* ════ COURSES TABLE ════ */
+function renderCTbl(){
+  reloadAll();
+  document.getElementById('cSub').textContent=`${courses.length} courses`;
+  document.getElementById('cTbl').innerHTML=`<table class="dt"><thead><tr><th>Thumb</th><th>Course</th><th>Modules</th><th>Topics</th><th>Actions</th></tr></thead><tbody>
+    ${courses.map(c=>{const cm=modules.filter(m=>m.cId===c.id);const ct=topics.filter(t=>cm.some(m=>m.id===t.mId));return`<tr>
+      <td><div style="width:44px;height:32px;border-radius:6px;overflow:hidden;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:16px">${c.thumb?`<img src="${c.thumb}" style="width:100%;height:100%;object-fit:cover">`:c.ico||'📚'}</div></td>
+      <td class="bold">${c.name}<div style="font-size:10px;color:var(--ink3);font-weight:400">${c.desc||''}</div></td>
+      <td><span class="bp bp-b">${cm.length}</span></td><td><span class="bp bp-p">${ct.length}</span></td>
+      <td><div class="abs"><button class="ab ab-e" onclick="editCourse('${c.id}')">✏️</button><button class="ab ab-d" onclick="delCourse('${c.id}')">🗑</button></div></td>
+    </tr>`}).join('')}
+    ${!courses.length?emptyRow(5,'कोई course नहीं'):''}
+  </tbody></table>`;
+}
+
+/* ════ MODULES TABLE ════ */
+function renderMTbl(){
+  reloadAll();
+  document.getElementById('mSub').textContent=`${modules.length} modules`;
+  document.getElementById('mTbl').innerHTML=`<table class="dt"><thead><tr><th>Module</th><th>Course</th><th>Topics</th><th>Actions</th></tr></thead><tbody>
+    ${modules.map(m=>{const c=courses.find(x=>x.id===m.cId);const cnt=topics.filter(t=>t.mId===m.id).length;return`<tr>
+      <td class="bold">${m.ico||'🗂'} ${m.name}<div style="font-size:10px;color:var(--ink3);font-weight:400">${m.desc||''}</div></td>
+      <td><span class="bp bp-b">${c?.ico||''} ${c?.name||'—'}</span></td>
+      <td><span class="bp bp-p">${cnt}</span></td>
+      <td><div class="abs"><button class="ab ab-e" onclick="editModule('${m.id}')">✏️</button><button class="ab ab-d" onclick="delModule('${m.id}')">🗑</button></div></td>
+    </tr>`}).join('')}
+    ${!modules.length?emptyRow(4,'कोई module नहीं'):''}
+  </tbody></table>`;
+}
+
+/* ════ TOPICS TABLE ════ */
+function renderTTbl(){
+  reloadAll();
+  document.getElementById('tSub').textContent=`${topics.length} topics`;
+  document.getElementById('tTbl').innerHTML=`<table class="dt"><thead><tr><th>Topic</th><th>Module</th><th>Notes</th><th>PPT</th><th>Actions</th></tr></thead><tbody>
+    ${topics.map(t=>{const m=modules.find(x=>x.id===t.mId);return`<tr>
+      <td class="bold">${t.emoji||'📖'} ${t.name}</td>
+      <td style="font-size:11px">${m?.ico||''} ${m?.name||'—'}</td>
+      <td><span class="bp ${t.notes?.trim()?'bp-g':'bp-gr'}">${t.notes?.trim()?'✓':'—'}</span></td>
+      <td><span class="bp ${t.pptLink?.trim()?'bp-o':'bp-gr'}">${t.pptLink?.trim()?'✓':'—'}</span></td>
+      <td><div class="abs"><button class="ab ab-e" onclick="editTopic('${t.id}')">✏️</button><button class="ab ab-d" onclick="delTopic('${t.id}')">🗑</button></div></td>
+    </tr>`}).join('')}
+    ${!topics.length?emptyRow(5,'कोई topic नहीं'):''}
+  </tbody></table>`;
+}
+
+/* ════ STUDENTS / STAFF ════ */
+function renderStuTbl(){
+  reloadAll();
+  const stus=users.filter(u=>u.role==='student');
+  document.getElementById('stuSub').textContent=`${stus.length} students`;
+  document.getElementById('stuTbl').innerHTML=`<thead><tr><th style="width:20%">Name</th><th style="width:28%">Email</th><th style="width:14%">Password</th><th style="width:20%">Batch</th><th style="width:18%">Actions</th></tr></thead><tbody>
+    ${stus.map(u=>{const b=batches.find(x=>x.id===u.batchId);return`<tr>
+      <td class="bold">${u.name}</td>
+      <td style="word-break:break-all;font-size:11px">${u.email}</td>
+      <td><code style="background:#f1f5f9;padding:3px 8px;border-radius:4px;font-size:10px;color:#475569">${u.pass}</code></td>
+      <td><span class="bp bp-b">${b?.name||'No Batch'}</span></td>
+      <td><div class="abs"><button class="ab ab-e" onclick="editUser('${u.id}')" title="Edit">Edit</button><button class="ab ab-d" onclick="delUser('${u.id}')" title="Delete">Del</button></div></td>
+    </tr>`}).join('')}
+    ${!stus.length?emptyRow(5,'Koi student nahi'):''}
+  </tbody>`;
+}
+function renderStaffTbl(){
+  reloadAll();
+  const st=users.filter(u=>u.role==='staff');
+  document.getElementById('staffTbl').innerHTML=`<table class="dt"><thead><tr><th style="width:8%"></th><th style="width:24%">Name</th><th style="width:30%">Email</th><th style="width:18%">Password</th><th style="width:20%">Actions</th></tr></thead><tbody>
+  ${st.map(u=>`<tr>
+  <td><div style="width:36px;height:36px;border-radius:50%;background:${u.photo?'transparent':'linear-gradient(135deg,#3b82f6,#7c3aed)'};display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #e2e8f0">${u.photo?`<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:14px;color:#fff;font-weight:700">${(u.name||'S')[0].toUpperCase()}</span>`}</div></td>
+  <td class="bold">${u.name}</td>
+  <td style="word-break:break-all;font-size:11px">${u.email}</td>
+  <td><code style="background:#f1f5f9;padding:3px 8px;border-radius:4px;font-size:10px;color:#475569">${u.pass}</code></td>
+  <td><div class="abs"><button class="ab ab-e" onclick="editUser('${u.id}')" title="Edit">Edit</button><button class="ab ab-d" onclick="delUser('${u.id}')" title="Delete">Del</button></div></td>
+  </tr>`).join('')}
+  ${!st.length?emptyRow(5,'Koi staff nahi'):''}
+  </tbody></table>`;
+  }
+
+/* ════ BATCHES ════ */
+function renderBatTbl(){
+  reloadAll();
+  document.getElementById('batSub').textContent=`${batches.length} batches`;
+  document.getElementById('batTbl').innerHTML=`<table class="dt"><thead><tr><th>Batch</th><th>Course</th><th>Unlocked</th><th>Students</th><th>Actions</th></tr></thead><tbody>
+  ${batches.map(b=>{
+  const c=courses.find(x=>x.id===b.courseId);
+  const stus=users.filter(u=>u.batchId===b.id).length;
+  return`<tr>
+  <td class="bold">${b.name}<div style="font-size:10px;color:var(--ink3)">${b.desc||''}</div></td>
+  <td><span class="bp bp-b">${c?.ico||''} ${c?.name||'—'}</span></td>
+  <td><span class="bp bp-g">${(b.unlockedTopics||[]).length} topics</span></td>
+  <td>${stus} students</td>
+  <td><div class="abs" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start">
+  <button class="ab" style="background:#eff6ff;color:#2563eb;font-size:10px;padding:6px 10px;border-radius:6px" onclick="quickAddToBatch('${b.id}')" title="CSV se students add karein">+ Add</button>
+  <button class="ab ab-g" style="padding:6px 10px;border-radius:6px" onclick="editBatchUnlock('${b.id}')" title="Unlock Topics">Unlock</button>
+  <button class="ab ab-e" style="padding:6px 10px;border-radius:6px" onclick="editBatch('${b.id}')" title="Edit">Edit</button>
+  <button class="ab ab-d" style="padding:6px 10px;border-radius:6px" onclick="delBatch('${b.id}')" title="Delete">Del</button>
+  </div></td>
+  </tr>`;
+  }).join('')}
+  ${!batches.length?emptyRow(5,'Koi batch nahi - pehle batch banayein'):''}
+  </tbody></table>`;
+  }
+
+/* ════ SLIDES / HERO BANNERS ════ */
+function renderSlidesList(){
+  reloadAll();
+  const el=document.getElementById('slidesList');
+  if(!slides.length){el.innerHTML=`<div class="empty"><div class="empty-ico">🎠</div><div class="empty-t">कोई banner नहीं</div><div style="font-size:11px;color:var(--ink3);margin-top:6px">Min 1 banner add करें for hero slider</div></div>`;return}
+  el.innerHTML=slides.sort((a,b)=>(a.order||0)-(b.order||0)).map((s,i)=>`
+    <div class="slide-card">
+      ${s.bg?`<div style="width:80px;height:50px;border-radius:6px;overflow:hidden;flex-shrink:0"><img src="${s.bg}" style="width:100%;height:100%;object-fit:cover"></div>`:
+        `<div style="width:80px;height:50px;border-radius:6px;background:var(--g-blue);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px">🎠</div>`}
+      <div class="slide-order">${s.order||i+1}</div>
+      <div class="slide-info">
+        <div class="slide-title">${s.title||'Untitled Banner'}</div>
+        <div class="slide-sub">${s.subtitle||'No subtitle'} ${s.badge?`· 🏷 ${s.badge}`:''}</div>
+      </div>
+      <div class="abs">
+        <button class="ab ab-e" onclick="editSlide('${s.id}')" title="Edit">✏️</button>
+        <button class="ab ab-d" onclick="delSlide('${s.id}')" title="Delete">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ════ NOTICES ════ */
+function renderNoticesList(){
+  reloadAll();
+  const el=document.getElementById('noticesList');
+  if(!notices.length){el.innerHTML=`<div class="empty"><div class="empty-ico">📢</div><div class="empty-t">कोई notice नहीं</div></div>`;return}
+  el.innerHTML=notices.map(n=>`
+    <div class="slide-card">
+      <div style="width:32px;height:32px;border-radius:50%;background:${n.important?'var(--yellow-lt)':'var(--blue-lt)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${n.important?'⭐':'📢'}</div>
+      <div class="slide-info">
+        <div class="slide-title">${n.title}</div>
+        <div class="slide-sub">${n.desc||''} · ${n.date||''}</div>
+      </div>
+      <div class="abs">
+        <button class="ab ab-e" onclick="editNotice('${n.id}')">✏️</button>
+        <button class="ab ab-d" onclick="delNotice('${n.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ════ PDF TABLE ════ */
+function renderPDFTbl(){
+  reloadAll();
+  document.getElementById('pdfTbl').innerHTML=`<table class="dt"><thead><tr><th>Name</th><th>Category</th><th>Size</th><th>Source</th><th>Actions</th></tr></thead><tbody>
+    ${pdfs.map(p=>`<tr>
+      <td class="bold">📄 ${p.name}</td>
+      <td><span class="bp bp-o">${p.category||'General'}</span></td>
+      <td>${p.size||'—'}</td>
+      <td><span class="bp ${p.url?'bp-b':'bp-g'}">${p.url?'URL':'Upload'}</span></td>
+      <td><div class="abs"><button class="ab ab-e" onclick="editPDF('${p.id}')">✏️</button><button class="ab ab-d" onclick="delPDF('${p.id}')">🗑</button></div></td>
+    </tr>`).join('')}
+    ${!pdfs.length?emptyRow(5,'कोई PDF नहीं'):''}
+  </tbody></table>`;
+}
+
+/* ════ SELECTS ════ */
+function fillSelects(){
+  reloadAll();
+  ['mfCourse','tfCourse','bfCourse'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.innerHTML=courses.map(c=>`<option value="${c.id}">${c.ico||'📚'} ${c.name}</option>`).join('')||'<option value="">— No Course —</option>';
+  });
+  const ufBatch=document.getElementById('ufBatch');
+  if(ufBatch) ufBatch.innerHTML='<option value="">— No Batch —</option>'+batches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  fillModSel();
+}
+function fillModSel(){
+  const cId=document.getElementById('tfCourse')?.value;
+  const el=document.getElementById('tfMod');if(!el)return;
+  const mods=cId?modules.filter(m=>m.cId===cId):modules;
+  el.innerHTML=mods.map(m=>`<option value="${m.id}">${m.ico||'🗂'} ${m.name}</option>`).join('')||'<option value="">— No Module —</option>';
+}
+
+/* ════ THUMBNAIL ════ */
+function handleThumb(type,input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const b64=e.target.result;
+    if(type==='c'){cThumbB64=b64;document.getElementById('cThumbImg').src=b64;document.getElementById('cThumbPrev').style.display='block';document.getElementById('cThumbPh').style.display='none'}
+    else{sThumbB64=b64;document.getElementById('sThumbImg').src=b64;document.getElementById('sThumbPrev').style.display='block';document.getElementById('sThumbPh').style.display='none'}
+  };
+  reader.readAsDataURL(file);
+}
+function handlePDF(input){
+  const file=input.files[0];if(!file)return;
+  document.getElementById('pfFileName').textContent=file.name;
+  const reader=new FileReader();
+  reader.onload=e=>{pdfB64=e.target.result};
+  reader.readAsDataURL(file);
+}
+
+/* ════ COURSE CRUD ════ */
+function prepCF(c=null){
+  fillSelects();
+  document.getElementById('cfTitle').textContent=c?'✏️ Course Edit':'➕ New Course';
+  document.getElementById('cfId').value=c?.id||'';
+  document.getElementById('cfName').value=c?.name||'';
+  document.getElementById('cfIco').value=c?.ico||'';
+  document.getElementById('cfDesc').value=c?.desc||'';
+  document.getElementById('cfClr').value=c?.clr||'#2563eb';
+  document.getElementById('cfBg').value=c?.bg||'#eff6ff';
+  document.getElementById('cfMsg').textContent='';
+  cThumbB64=c?.thumb||'';
+  if(cThumbB64){document.getElementById('cThumbImg').src=cThumbB64;document.getElementById('cThumbPrev').style.display='block';document.getElementById('cThumbPh').style.display='none'}
+  else{document.getElementById('cThumbPrev').style.display='none';document.getElementById('cThumbPh').style.display='block'}
+}
+function editCourse(id){prepCF(courses.find(x=>x.id===id));aNav(null,'addCourseP')}
+function saveCourse(){
+  reloadAll();
+  const name=document.getElementById('cfName').value.trim();
+  if(!name){toast('❌ Name ज़रूरी है!','err');return}
+  const id=document.getElementById('cfId').value;
+  const data={name,ico:document.getElementById('cfIco').value.trim()||'📚',desc:document.getElementById('cfDesc').value.trim(),clr:document.getElementById('cfClr').value.trim()||'#2563eb',bg:document.getElementById('cfBg').value.trim()||'#eff6ff',thumb:cThumbB64};
+  if(id){const i=courses.findIndex(x=>x.id===id);if(i>-1)courses[i]={...courses[i],...data};save(K.c,courses);toast('✅ Course updated!','ok')}
+  else{courses.push({id:uid(),...data});save(K.c,courses);toast('✅ Course added!','ok')}
+  updateCounts();document.getElementById('cfMsg').textContent='✅ Saved!';setTimeout(()=>{aNav(null,'coursesP')},600);
+}
+function delCourse(id){
+  confirm2('Course Delete?','सभी Modules और Topics भी delete होंगे।',()=>{
+    reloadAll();const mIds=modules.filter(m=>m.cId===id).map(m=>m.id);
+    save(K.t,topics.filter(t=>!mIds.includes(t.mId)));
+    save(K.m,modules.filter(m=>m.cId!==id));
+    save(K.c,courses.filter(x=>x.id!==id));
+    reloadAll();updateCounts();renderCTbl();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ MODULE CRUD ════ */
+function prepMF(m=null){
+  fillSelects();
+  document.getElementById('mfTitle').textContent=m?'✏️ Module Edit':'➕ New Module';
+  document.getElementById('mfId').value=m?.id||'';
+  if(m)document.getElementById('mfCourse').value=m.cId||'';
+  document.getElementById('mfName').value=m?.name||'';
+  document.getElementById('mfIco').value=m?.ico||'';
+  document.getElementById('mfDesc').value=m?.desc||'';
+  document.getElementById('mfClr').value=m?.clr||'#6366f1';
+  document.getElementById('mfBg').value=m?.bg||'#ede9fe';
+  document.getElementById('mfMsg').textContent='';
+}
+function editModule(id){prepMF(modules.find(x=>x.id===id));aNav(null,'addModP')}
+function saveModule(){
+  reloadAll();
+  const name=document.getElementById('mfName').value.trim();
+  const cId=document.getElementById('mfCourse').value;
+  if(!name||!cId){toast('❌ Name और Course ज़रूरी है!','err');return}
+  const id=document.getElementById('mfId').value;
+  const data={cId,name,ico:document.getElementById('mfIco').value.trim()||'🗂',desc:document.getElementById('mfDesc').value.trim(),clr:document.getElementById('mfClr').value.trim()||'#6366f1',bg:document.getElementById('mfBg').value.trim()||'#ede9fe'};
+  if(id){const i=modules.findIndex(x=>x.id===id);if(i>-1)modules[i]={...modules[i],...data};save(K.m,modules);toast('✅ Updated!','ok')}
+  else{modules.push({id:uid(),...data});save(K.m,modules);toast('✅ Added!','ok')}
+  reloadAll();updateCounts();document.getElementById('mfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'modsP'),600);
+}
+function delModule(id){
+  confirm2('Module Delete?','सभी Topics भी delete होंगे।',()=>{
+    reloadAll();save(K.t,topics.filter(t=>t.mId!==id));save(K.m,modules.filter(x=>x.id!==id));
+    reloadAll();updateCounts();renderMTbl();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ TOPIC CRUD ════ */
+function prepTF(t=null){
+  fillSelects();
+  document.getElementById('tfTitle').textContent=t?'✏️ Topic Edit':'➕ New Topic';
+  document.getElementById('tfId').value=t?.id||'';
+  if(t){const m=modules.find(x=>x.id===t.mId);if(m){document.getElementById('tfCourse').value=m.cId||'';fillModSel();document.getElementById('tfMod').value=t.mId||''}}
+  document.getElementById('tfName').value=t?.name||'';
+  document.getElementById('tfEmoji').value=t?.emoji||'';
+  document.getElementById('tfNotes').value=t?.notes||'';
+  document.getElementById('tfPPT').value=t?.pptLink||'';
+  document.getElementById('tfMsg').textContent='';
+}
+function editTopic(id){prepTF(topics.find(x=>x.id===id));aNav(null,'addTopicP')}
+function saveTopic(){
+  reloadAll();
+  const name=document.getElementById('tfName').value.trim();
+  const mId=document.getElementById('tfMod').value;
+  if(!name||!mId){toast('❌ Name और Module ज़रूरी है!','err');return}
+  const id=document.getElementById('tfId').value;
+  const data={mId,name,emoji:document.getElementById('tfEmoji').value.trim()||'📖',notes:document.getElementById('tfNotes').value.trim(),pptLink:document.getElementById('tfPPT').value.trim()};
+  if(id){const i=topics.findIndex(x=>x.id===id);if(i>-1)topics[i]={...topics[i],...data};save(K.t,topics);toast('✅ Updated!','ok')}
+  else{topics.unshift({id:uid(),...data});save(K.t,topics);toast('✅ Added!','ok')}
+  reloadAll();updateCounts();document.getElementById('tfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'topicsP'),600);
+}
+function delTopic(id){
+  confirm2('Topic Delete?','यह permanently delete होगा।',()=>{
+    reloadAll();save(K.t,topics.filter(x=>x.id!==id));reloadAll();updateCounts();renderTTbl();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ USER CRUD ���═══ */
+let staffPhotoData=null;
+
+function toggleStaffPhoto(){
+  const role=document.getElementById('ufRole').value;
+  document.getElementById('ufPhotoField').style.display=role==='staff'?'block':'none';
+  document.getElementById('ufBatchField').style.display=role==='student'?'block':'none';
+}
+
+function handleStaffPhoto(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>300000){toast('Photo 300KB se chhota hona chahiye!','err');return}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    staffPhotoData=e.target.result;
+    document.getElementById('ufPhotoImg').src=staffPhotoData;
+    document.getElementById('ufPhotoImg').style.display='block';
+    document.getElementById('ufPhotoPlaceholder').style.display='none';
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function removeStaffPhoto(){
+  staffPhotoData=null;
+  document.getElementById('ufPhotoImg').src='';
+  document.getElementById('ufPhotoImg').style.display='none';
+  document.getElementById('ufPhotoPlaceholder').style.display='block';
+}
+
+function loadStaffPhotoPreview(photo){
+  if(photo){
+    staffPhotoData=photo;
+    document.getElementById('ufPhotoImg').src=photo;
+    document.getElementById('ufPhotoImg').style.display='block';
+    document.getElementById('ufPhotoPlaceholder').style.display='none';
+  }else{
+    removeStaffPhoto();
+  }
+}
+
+function prepUF(role='student',u=null){
+  fillSelects();
+  document.getElementById('ufTitle').textContent=u?'Edit User':'+ New User';
+  document.getElementById('ufId').value=u?.id||'';
+  document.getElementById('ufRole').value=u?.role||role;
+  document.getElementById('ufName').value=u?.name||'';
+  document.getElementById('ufEmail').value=u?.email||'';
+  document.getElementById('ufPass').value=u?.pass||'';
+  document.getElementById('ufBatch').value=u?.batchId||'';
+  document.getElementById('ufMsg').textContent='';
+  toggleStaffPhoto();
+  loadStaffPhotoPreview(u?.photo||null);
+}
+function editUser(id){prepUF(undefined,users.find(x=>x.id===id));aNav(null,'addUserP')}
+function saveUser(){
+  reloadAll();
+  const name=document.getElementById('ufName').value.trim();
+  const email=document.getElementById('ufEmail').value.trim();
+  const pass=document.getElementById('ufPass').value.trim();
+  if(!name||!email||!pass){toast('Name, Email, Password zaroori hai!','err');return}
+  if(pass.length<6){toast('Password min 6 chars!','err');return}
+  const id=document.getElementById('ufId').value;
+  const role=document.getElementById('ufRole').value;
+  const data={name,email,pass,role,batchId:role==='student'?document.getElementById('ufBatch').value||null:null,photo:role==='staff'?staffPhotoData:null};
+  if(id){const i=users.findIndex(x=>x.id===id);if(i>-1)users[i]={...users[i],...data};save(K.users,users);toast('Updated!','ok')}
+  else{
+    if(users.find(x=>x.email.toLowerCase()===email.toLowerCase())){toast('Yeh email pehle se exist karti hai!','err');return}
+    users.push({id:uid(),...data});save(K.users,users);toast('User added!','ok');
+  }
+  reloadAll();updateCounts();document.getElementById('ufMsg').textContent='Saved!';
+  setTimeout(()=>aNav(null,data.role==='student'?'studentsP':'staffP'),600);
+}
+function delUser(id){
+  confirm2('User Delete?','यह user permanently delete होगा।',()=>{
+    reloadAll();save(K.users,users.filter(x=>x.id!==id));reloadAll();updateCounts();renderStuTbl();renderStaffTbl();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ BATCH CRUD ════ */
+function prepBF(b=null){
+  fillSelects();
+  document.getElementById('bfTitle').textContent=b?'✏️ Batch Edit':'➕ New Batch';
+  document.getElementById('bfId').value=b?.id||'';
+  document.getElementById('bfName').value=b?.name||'';
+  document.getElementById('bfDesc').value=b?.desc||'';
+  if(b)document.getElementById('bfCourse').value=b.courseId||'';
+  document.getElementById('bfMsg').textContent='';
+  document.getElementById('unlockSection').style.display='none';
+}
+function editBatch(id){prepBF(batches.find(x=>x.id===id));aNav(null,'addBatchP')}
+function editBatchUnlock(bId){
+  reloadAll();
+  const b=batches.find(x=>x.id===bId);
+  if(!b){toast('Batch not found','err');return}
+  prepBF(b);
+  aNav(null,'addBatchP');
+  document.getElementById('unlockSection').style.display='block';
+  // render topics
+  const c=courses.find(x=>x.id===b.courseId);
+  const cMods=c?modules.filter(m=>m.cId===c.id):[];
+  const cTopics=topics.filter(t=>cMods.some(m=>m.id===t.mId));
+  const unlocked=b.unlockedTopics||[];
+  document.getElementById('unlockTopicList').innerHTML=cMods.map(m=>{
+    const mt=cTopics.filter(t=>t.mId===m.id);
+    return`<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${m.ico||'📁'} ${m.name}</div>
+      ${mt.map(t=>`<div class="unlock-topic-item">
+        <div class="uti-em">${t.emoji||'📖'}</div>
+        <div class="uti-info"><div class="uti-name">${t.name}</div></div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:700;color:${unlocked.includes(t.id)?'var(--green)':'var(--ink3)'}">
+          <input type="checkbox" data-tid="${t.id}" ${unlocked.includes(t.id)?'checked':''} style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
+          ${unlocked.includes(t.id)?'Unlocked':'Locked'}
+        </label>
+      </div>`).join('')}
+    </div>`;
+  }).join('')||'<div style="padding:20px;text-align:center;color:var(--ink3)">���स course में कोई topic नहीं</div>';
+  // store bId for saving
+  document.getElementById('unlockSection').dataset.batchId=bId;
+}
+function saveUnlock(){
+  reloadAll();
+  const bId=document.getElementById('unlockSection').dataset.batchId;
+  const checkboxes=document.querySelectorAll('#unlockTopicList input[type=checkbox]');
+  const unlocked=[...checkboxes].filter(c=>c.checked).map(c=>c.dataset.tid);
+  const i=batches.findIndex(x=>x.id===bId);
+  if(i>-1){batches[i].unlockedTopics=unlocked;save(K.batches,batches)}
+  toast('✅ Topics unlock updated!','ok');
+  document.getElementById('ulMsg').textContent=`✅ ${unlocked.length} topics unlocked!`;
+}
+function saveBatch(){
+  reloadAll();
+  const name=document.getElementById('bfName').value.trim();
+  const courseId=document.getElementById('bfCourse').value;
+  if(!name||!courseId){toast('Name aur Course zaruri hai!','err');return}
+  const id=document.getElementById('bfId').value;
+  const data={name,desc:document.getElementById('bfDesc').value.trim(),courseId};
+  if(id){const i=batches.findIndex(x=>x.id===id);if(i>-1)batches[i]={...batches[i],...data};save(K.batches,batches);toast('Updated!','ok')}
+  else{batches.push({id:uid(),...data,unlockedTopics:[]});save(K.batches,batches);toast('Batch added!','ok')}
+  reloadAll();updateCounts();document.getElementById('bfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'batchesP'),600);
+}
+
+/* ════ STUDENT CSV IMPORT ════ */
+let studentExcelData=null;
+
+function handleStudentExcel(input){
+  const file=input.files[0];
+  if(!file){return}
+  
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const content=e.target.result;
+    
+    try{
+      const lines=content.trim().split('\n');
+      let rows=lines.map(line=>{
+        const parts=[];
+        let current='';
+        let inQuotes=false;
+        for(let i=0;i<line.length;i++){
+          const ch=line[i];
+          if(ch==='"')inQuotes=!inQuotes;
+          else if(ch===','&&!inQuotes){parts.push(current.trim());current=''}
+          else current+=ch;
+        }
+        parts.push(current.trim());
+        return parts;
+      });
+      
+      // Skip header if looks like headers
+      const firstRow=rows[0]?.map(c=>c.toLowerCase())||[];
+      if(firstRow.includes('name')||firstRow.includes('email')||firstRow.includes('password')){
+        rows=rows.slice(1);
+      }
+      
+      // Filter empty rows
+      rows=rows.filter(r=>r.length>=2&&r[0]&&r[1]);
+      
+      if(!rows.length){
+        toast('CSV mein koi valid data nahi mila!','err');
+        return;
+      }
+      
+      studentExcelData=rows;
+      
+      // Show preview
+      document.getElementById('studentExcelPreview').style.display='block';
+      document.getElementById('studentExcelInfo').innerHTML=`
+        <b>${rows.length} students</b> milein CSV mein<br>
+        Format: ${rows[0].length>=3?'Name, Email, Password':'Name, Email (password auto-generate hoga)'}
+      `;
+      
+      // Fill batch dropdown
+      reloadAll();
+      const sel=document.getElementById('studentExcelBatch');
+      sel.innerHTML='<option value="">-- Batch Choose Karein --</option>'+batches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+      
+    }catch(err){
+      toast('File read error: '+err.message,'err');
+      studentExcelData=null;
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function cancelStudentExcel(){
+  studentExcelData=null;
+  document.getElementById('studentExcelPreview').style.display='none';
+}
+
+function importStudentExcel(){
+  if(!studentExcelData||!studentExcelData.length){
+    toast('Koi data nahi hai import ke liye!','err');
+    return;
+  }
+  
+  const batchId=document.getElementById('studentExcelBatch').value;
+  if(!batchId){
+    toast('Pehle batch select karein!','err');
+    return;
+  }
+  
+  reloadAll();
+  
+  let imported=0,skipped=0;
+  
+  studentExcelData.forEach(row=>{
+    const name=(row[0]||'').replace(/"/g,'').trim();
+    const email=(row[1]||'').replace(/"/g,'').trim().toLowerCase();
+    let pass=(row[2]||'').replace(/"/g,'').trim();
+    
+    if(!name||!email)return;
+    
+    // Check if email already exists
+    if(users.find(u=>u.email.toLowerCase()===email)){
+      skipped++;
+      return;
+    }
+    
+    // Auto-generate password if not provided
+    if(!pass||pass.length<4){
+      pass='ssc'+Math.random().toString(36).slice(2,8);
+    }
+    
+    users.push({
+      id:uid(),
+      name,
+      email,
+      pass,
+      role:'student',
+      batchId
+    });
+    imported++;
+  });
+  
+  save(K.users,users);
+  reloadAll();
+  updateCounts();
+  
+  // Hide preview
+  cancelStudentExcel();
+  
+  const batchName=batches.find(b=>b.id===batchId)?.name||'';
+  toast(`${imported} students "${batchName}" mein add huye! ${skipped>0?`(${skipped} skip - duplicate email)`:''}`,imported>0?'ok':'err');
+  
+  // Refresh table
+  renderStuTbl();
+}
+
+// Quick add students to batch from batch row
+function quickAddToBatch(batchId){
+  document.getElementById('studentExcelBatch').value=batchId;
+  aNav(null,'studentsP');
+  document.getElementById('studentExcelInput').click();
+}
+
+/* ════ EXCEL/CSV IMPORT FOR BATCH (Legacy) ════ */
+let excelData=null;
+
+function handleBatchExcel(input){
+  const file=input.files[0];
+  if(!file){return}
+  
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const content=e.target.result;
+    const ext=file.name.split('.').pop().toLowerCase();
+    
+    try{
+      let rows=[];
+      if(ext==='csv'){
+        // Parse CSV
+        const lines=content.trim().split('\n');
+        rows=lines.map(line=>{
+          // Handle quoted values
+          const parts=[];
+          let current='';
+          let inQuotes=false;
+          for(let i=0;i<line.length;i++){
+            const ch=line[i];
+            if(ch==='"')inQuotes=!inQuotes;
+            else if(ch===','&&!inQuotes){parts.push(current.trim());current=''}
+            else current+=ch;
+          }
+          parts.push(current.trim());
+          return parts;
+        });
+      }else{
+        // For xlsx/xls, show error - need proper library
+        toast('XLSX format: Please save as CSV first!','err');
+        return;
+      }
+      
+      // Skip header if it looks like headers
+      const firstRow=rows[0]?.map(c=>c.toLowerCase())||[];
+      if(firstRow.includes('name')||firstRow.includes('email')){
+        rows=rows.slice(1);
+      }
+      
+      // Filter empty rows
+      rows=rows.filter(r=>r.length>=2&&r[0]&&r[1]);
+      
+      if(!rows.length){
+        toast('No valid data found in file!','err');
+        return;
+      }
+      
+      excelData=rows;
+      
+      // Show preview
+      document.getElementById('excelPreviewArea').style.display='block';
+      document.getElementById('excelInfo').innerHTML=`<b>${rows.length}</b> students found in file<br>Format: ${rows[0].length>=3?'Name, Email, Password':'Name, Email (password auto-generate)'}`;
+      
+      // Fill batch dropdown
+      reloadAll();
+      const sel=document.getElementById('excelBatchSelect');
+      sel.innerHTML='<option value="">-- Select Batch --</option>'+batches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+      
+    }catch(err){
+      toast('File read error: '+err.message,'err');
+      excelData=null;
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function cancelExcelImport(){
+  excelData=null;
+  document.getElementById('excelPreviewArea').style.display='none';
+}
+
+function importExcelStudents(){
+  if(!excelData||!excelData.length){
+    toast('No data to import!','err');
+    return;
+  }
+  
+  const batchId=document.getElementById('excelBatchSelect').value;
+  if(!batchId){
+    toast('Please select a batch!','err');
+    return;
+  }
+  
+  reloadAll();
+  
+  let imported=0,skipped=0;
+  
+  excelData.forEach(row=>{
+    const name=(row[0]||'').replace(/"/g,'').trim();
+    const email=(row[1]||'').replace(/"/g,'').trim().toLowerCase();
+    let pass=(row[2]||'').replace(/"/g,'').trim();
+    
+    if(!name||!email)return;
+    
+    // Check if email already exists
+    if(users.find(u=>u.email.toLowerCase()===email)){
+      skipped++;
+      return;
+    }
+    
+    // Auto-generate password if not provided
+    if(!pass||pass.length<4){
+      pass='ssc'+Math.random().toString(36).slice(2,8);
+    }
+    
+    users.push({
+      id:uid(),
+      name,
+      email,
+      pass,
+      role:'student',
+      batchId
+    });
+    imported++;
+  });
+  
+  save(K.users,users);
+  reloadAll();
+  updateCounts();
+  
+  // Hide preview
+  cancelExcelImport();
+  
+  toast(`${imported} students imported! ${skipped>0?`(${skipped} skipped - duplicate email)`:''}`,imported>0?'ok':'err');
+  
+  // Refresh tables
+  renderBatTbl();
+  renderStuTbl();
+}
+function delBatch(id){
+  confirm2('Batch Delete?','Students का batch assignment हट जाएगा।',()=>{
+    reloadAll();
+    users.forEach(u=>{if(u.batchId===id)u.batchId=null});
+    save(K.users,users);save(K.batches,batches.filter(x=>x.id!==id));
+    reloadAll();updateCounts();renderBatTbl();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ SLIDE CRUD ════ */
+function prepSF(s=null){
+  document.getElementById('sfTitle').textContent=s?'✏️ Slide Edit':'➕ New Slide';
+  document.getElementById('sfId').value=s?.id||'';
+  document.getElementById('sfBadge').value=s?.badge||'';
+  document.getElementById('sfTitle2').value=s?.title||'';
+  document.getElementById('sfSub').value=s?.subtitle||'';
+  document.getElementById('sfBtn1').value=s?.btnPrimary||'';
+  document.getElementById('sfBtn2').value=s?.btnSec||'';
+  document.getElementById('sfOrder').value=s?.order||slides.length+1;
+  document.getElementById('sfMsg').textContent='';
+  sThumbB64=s?.bg||'';
+  if(sThumbB64){document.getElementById('sThumbImg').src=sThumbB64;document.getElementById('sThumbPrev').style.display='block';document.getElementById('sThumbPh').style.display='none'}
+  else{document.getElementById('sThumbPrev').style.display='none';document.getElementById('sThumbPh').style.display='block'}
+}
+function editSlide(id){prepSF(slides.find(x=>x.id===id));aNav(null,'addSlideP')}
+function saveSlide(){
+  reloadAll();
+  const title=document.getElementById('sfTitle2').value.trim();
+  if(!title){toast('❌ Title ज़रूरी है!','err');return}
+  const id=document.getElementById('sfId').value;
+  const data={title,badge:document.getElementById('sfBadge').value.trim(),subtitle:document.getElementById('sfSub').value.trim(),btnPrimary:document.getElementById('sfBtn1').value.trim(),btnSec:document.getElementById('sfBtn2').value.trim(),order:parseInt(document.getElementById('sfOrder').value)||1,bg:sThumbB64};
+  if(id){const i=slides.findIndex(x=>x.id===id);if(i>-1)slides[i]={...slides[i],...data};save(K.slides,slides);toast('✅ Updated!','ok')}
+  else{if(slides.length>=10){toast('❌ Maximum 10 banners!','err');return}slides.push({id:uid(),...data});save(K.slides,slides);toast('✅ Banner added!','ok')}
+  reloadAll();updateCounts();document.getElementById('sfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'slidesP'),600);
+}
+function delSlide(id){
+  confirm2('Slide Delete?','यह slide delete होगी।',()=>{
+    reloadAll();save(K.slides,slides.filter(x=>x.id!==id));reloadAll();updateCounts();renderSlidesList();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ NOTICE CRUD ════ */
+function prepNF(n=null){
+  document.getElementById('nfTitle').textContent=n?'✏️ Notice Edit':'➕ New Notice';
+  document.getElementById('nfId').value=n?.id||'';
+  document.getElementById('nfTitle2').value=n?.title||'';
+  document.getElementById('nfDesc').value=n?.desc||'';
+  document.getElementById('nfDate').value=n?.date||new Date().toLocaleDateString('hi-IN');
+  document.getElementById('nfImp').value=n?.important?'true':'false';
+  document.getElementById('nfMsg').textContent='';
+}
+function editNotice(id){prepNF(notices.find(x=>x.id===id));aNav(null,'addNoticeP')}
+function saveNotice(){
+  reloadAll();
+  const title=document.getElementById('nfTitle2').value.trim();
+  if(!title){toast('❌ Title ज़रूरी है!','err');return}
+  const id=document.getElementById('nfId').value;
+  const data={title,desc:document.getElementById('nfDesc').value.trim(),date:document.getElementById('nfDate').value.trim(),important:document.getElementById('nfImp').value==='true'};
+  if(id){const i=notices.findIndex(x=>x.id===id);if(i>-1)notices[i]={...notices[i],...data};save(K.notices,notices);toast('✅ Updated!','ok')}
+  else{notices.unshift({id:uid(),...data});save(K.notices,notices);toast('✅ Notice added!','ok')}
+  reloadAll();updateCounts();document.getElementById('nfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'noticesP'),600);
+}
+function delNotice(id){
+  confirm2('Notice Delete?','',()=>{
+    reloadAll();save(K.notices,notices.filter(x=>x.id!==id));reloadAll();updateCounts();renderNoticesList();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ ANNOUNCEMENT CRUD ════ */
+function prepAF(a=null){
+  document.getElementById('afTitle').textContent=a?'✏️ Edit Announcement':'➕ New Announcement';
+  document.getElementById('afId').value=a?.id||'';
+  document.getElementById('afText').value=a?.text||'';
+  document.getElementById('afMsg').textContent='';
+}
+function editAnn(id){prepAF(announcements.find(x=>x.id===id));aNav(null,'addAnnP')}
+function saveAnn(){
+  reloadAll();
+  const text=document.getElementById('afText').value.trim();
+  if(!text){toast('❌ Text ज़रूरी है!','err');return}
+  const id=document.getElementById('afId').value;
+  const data={text};
+  if(id){const i=announcements.findIndex(x=>x.id===id);if(i>-1)announcements[i]={...announcements[i],...data};save(K.announcements,announcements);toast('✅ Updated!','ok')}
+  else{announcements.push({id:uid(),...data});save(K.announcements,announcements);toast('✅ Announcement added!','ok')}
+  reloadAll();updateCounts();document.getElementById('afMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'annP'),600);
+}
+function delAnn(id){
+  confirm2('Announcement Delete?','',()=>{
+    reloadAll();save(K.announcements,announcements.filter(x=>x.id!==id));reloadAll();updateCounts();renderAnnList();toast('🗑 Deleted','ok');
+  });
+}
+function renderAnnList(){
+  reloadAll();
+  const el=document.getElementById('annList');
+  if(!announcements.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📣</div><div class="empty-t">Koi announcement nahi</div></div>';
+    return;
+  }
+  el.innerHTML=announcements.map((a,i)=>`
+    <div class="slide-card">
+      <div class="slide-order">${i+1}</div>
+      <div class="slide-info">
+        <div class="slide-title">${a.text}</div>
+        <div class="slide-sub">📣 Scrolling ticker mein dikhega</div>
+      </div>
+      <div class="abs">
+        <button class="ab ab-e" onclick="editAnn('${a.id}')" title="Edit">✏️</button>
+        <button class="ab ab-d" onclick="delAnn('${a.id}')" title="Delete">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════ QUIZ SECTION CRUD ════ */
+function prepQSF(qs=null){
+  document.getElementById('qsfTitle').textContent=qs?'Edit Quiz Section':'+ New Quiz Section';
+  document.getElementById('qsfId').value=qs?.id||'';
+  document.getElementById('qsfCourse').value=qs?.cId||'';
+  document.getElementById('qsfName').value=qs?.name||'';
+  document.getElementById('qsfOrder').value=qs?.order||1;
+  document.getElementById('qsfMsg').textContent='';
+  // Fill course select
+  const sel=document.getElementById('qsfCourse');
+  sel.innerHTML='<option value="">-- Select Course --</option>'+courses.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  if(qs)sel.value=qs.cId;
+}
+function editQuizSec(id){prepQSF(quizSecs.find(x=>x.id===id));aNav(null,'addQuizSecP')}
+function saveQuizSec(){
+  reloadAll();
+  const name=document.getElementById('qsfName').value.trim();
+  const cId=document.getElementById('qsfCourse').value;
+  if(!name||!cId){toast('Course aur Name zaruri hai!','err');return}
+  const id=document.getElementById('qsfId').value;
+  const data={name,cId,order:parseInt(document.getElementById('qsfOrder').value)||1};
+  if(id){const i=quizSecs.findIndex(x=>x.id===id);if(i>-1)quizSecs[i]={...quizSecs[i],...data};save(K.quizSecs,quizSecs);toast('Updated!','ok')}
+  else{quizSecs.push({id:uid(),...data});save(K.quizSecs,quizSecs);toast('Quiz Section added!','ok')}
+  reloadAll();updateCounts();document.getElementById('qsfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
+}
+function delQuizSec(id){
+  confirm2('Quiz Section Delete?','Iske saare chapters bhi delete honge',()=>{
+    reloadAll();
+    // Delete all chapters of this section
+    save(K.quizChs,quizChs.filter(x=>x.secId!==id));
+    save(K.quizSecs,quizSecs.filter(x=>x.id!==id));
+    reloadAll();updateCounts();renderQuizList();toast('Deleted','ok');
+  });
+}
+
+/* ════ QUIZ CHAPTER CRUD ════ */
+function prepQCF(qc=null){
+  document.getElementById('qcfTitle').textContent=qc?'Edit Quiz Chapter':'+ New Quiz Chapter';
+  document.getElementById('qcfId').value=qc?.id||'';
+  document.getElementById('qcfSec').value=qc?.secId||'';
+  document.getElementById('qcfName').value=qc?.name||'';
+  document.getElementById('qcfOrder').value=qc?.order||1;
+  document.getElementById('qcfCode').value=qc?.htmlCode||'';
+  document.getElementById('qcfMsg').textContent='';
+  // Fill section select
+  const sel=document.getElementById('qcfSec');
+  sel.innerHTML='<option value="">-- Select Section --</option>'+quizSecs.map(qs=>{
+    const c=courses.find(x=>x.id===qs.cId);
+    return`<option value="${qs.id}">${c?.name||'?'} - ${qs.name}</option>`;
+  }).join('');
+  if(qc)sel.value=qc.secId;
+}
+function editQuizCh(id){prepQCF(quizChs.find(x=>x.id===id));aNav(null,'addQuizChP')}
+function saveQuizCh(){
+  reloadAll();
+  const name=document.getElementById('qcfName').value.trim();
+  const secId=document.getElementById('qcfSec').value;
+  const code=document.getElementById('qcfCode').value.trim();
+  if(!name||!secId||!code){toast('Section, Name aur Code zaruri hai!','err');return}
+  const id=document.getElementById('qcfId').value;
+  const data={name,secId,order:parseInt(document.getElementById('qcfOrder').value)||1,htmlCode:code};
+  if(id){const i=quizChs.findIndex(x=>x.id===id);if(i>-1)quizChs[i]={...quizChs[i],...data};save(K.quizChs,quizChs);toast('Updated!','ok')}
+  else{quizChs.push({id:uid(),...data});save(K.quizChs,quizChs);toast('Quiz Chapter added!','ok')}
+  reloadAll();updateCounts();document.getElementById('qcfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
+}
+function delQuizCh(id){
+  confirm2('Quiz Chapter Delete?','',()=>{
+    reloadAll();save(K.quizChs,quizChs.filter(x=>x.id!==id));reloadAll();updateCounts();renderQuizList();toast('Deleted','ok');
+  });
+}
+
+function renderQuizList(){
+  reloadAll();
+  const el=document.getElementById('quizList');
+  if(!quizSecs.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📝</div><div class="empty-t">Koi quiz section nahi</div><p style="font-size:11px;color:var(--ink3);margin-top:6px">Pehle Quiz Section banayein, phir usme chapters add karein</p></div>';
+    return;
+  }
+  el.innerHTML=quizSecs.sort((a,b)=>(a.order||1)-(b.order||1)).map(sec=>{
+    const course=courses.find(c=>c.id===sec.cId);
+    const chs=quizChs.filter(ch=>ch.secId===sec.id).sort((a,b)=>(a.order||1)-(b.order||1));
+    return`
+      <div class="slide-card" style="flex-direction:column;align-items:stretch;padding:0">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--g-blue);border-bottom:1px solid var(--line)">
+          <div class="slide-order">${sec.order||1}</div>
+          <div class="slide-info" style="flex:1">
+            <div class="slide-title">${sec.name}</div>
+            <div class="slide-sub">${course?.name||'Unknown Course'} - ${chs.length} chapters</div>
+          </div>
+          <div class="abs" style="position:static">
+            <button class="ab ab-e" onclick="editQuizSec('${sec.id}')" title="Edit">Edit</button>
+            <button class="ab ab-d" onclick="delQuizSec('${sec.id}')" title="Delete">Del</button>
+          </div>
+        </div>
+        <div style="padding:10px">
+          ${chs.length?chs.map(ch=>`
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border-radius:6px;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:700;color:var(--ink3)">${ch.order||1}</span>
+              <span style="flex:1;font-size:12px;font-weight:600">${ch.name}</span>
+              <button class="ab ab-e" onclick="editQuizCh('${ch.id}')" style="padding:4px 8px;font-size:10px">Edit</button>
+              <button class="ab ab-d" onclick="delQuizCh('${ch.id}')" style="padding:4px 8px;font-size:10px">Del</button>
+            </div>
+          `).join(''):'<div style="text-align:center;padding:12px;font-size:11px;color:var(--ink3)">Koi chapter nahi - Quiz Chapter add karein</div>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ════ CUSTOM PAGES CRUD ════ */
+function prepCPF(cp=null){
+  document.getElementById('cpfTitle').textContent=cp?'Edit Custom Page':'+ New Custom Page';
+  document.getElementById('cpfId').value=cp?.id||'';
+  document.getElementById('cpfCategory').value=cp?.category||'';
+  document.getElementById('cpfTitle2').value=cp?.title||'';
+  document.getElementById('cpfDesc').value=cp?.desc||'';
+  document.getElementById('cpfOrder').value=cp?.order||1;
+  document.getElementById('cpfCode').value=cp?.htmlCode||'';
+  document.getElementById('cpfMsg').textContent='';
+}
+function editCustomPage(id){prepCPF(customPages.find(x=>x.id===id));aNav(null,'addCustomPageP')}
+function saveCustomPage(){
+  reloadAll();
+  const title=document.getElementById('cpfTitle2').value.trim();
+  const category=document.getElementById('cpfCategory').value;
+  const code=document.getElementById('cpfCode').value.trim();
+  if(!title||!category||!code){toast('Category, Title aur Code zaruri hai!','err');return}
+  const id=document.getElementById('cpfId').value;
+  const data={title,category,desc:document.getElementById('cpfDesc').value.trim(),order:parseInt(document.getElementById('cpfOrder').value)||1,htmlCode:code};
+  if(id){const i=customPages.findIndex(x=>x.id===id);if(i>-1)customPages[i]={...customPages[i],...data};save(K.customPages,customPages);toast('Updated!','ok')}
+  else{customPages.push({id:uid(),...data});save(K.customPages,customPages);toast('Custom Page added!','ok')}
+  reloadAll();updateCounts();document.getElementById('cpfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'customPagesP'),600);
+}
+function delCustomPage(id){
+  confirm2('Custom Page Delete?','',()=>{
+    reloadAll();save(K.customPages,customPages.filter(x=>x.id!==id));reloadAll();updateCounts();renderCustomPagesList();toast('Deleted','ok');
+  });
+}
+
+function renderCustomPagesList(){
+  reloadAll();
+  const el=document.getElementById('customPagesList');
+  if(!customPages.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">���</div><div class="empty-t">Koi custom page nahi</div><p style="font-size:11px;color:var(--ink3);margin-top:6px">Services, About Me, Other tabs ke liye pages banayein</p></div>';
+    return;
+  }
+  const categories={services:'Services',about:'About Me',other:'Other'};
+  el.innerHTML=customPages.sort((a,b)=>(a.order||1)-(b.order||1)).map(cp=>`
+    <div class="slide-card">
+      <div class="slide-order" style="background:${cp.category==='services'?'#eff6ff':cp.category==='about'?'#f0fdf4':'#fef9c3'}">${cp.order||1}</div>
+      <div class="slide-info">
+        <div class="slide-title">${cp.title}</div>
+        <div class="slide-sub">${categories[cp.category]||cp.category} ${cp.desc?'- '+cp.desc:''}</div>
+      </div>
+      <div class="abs">
+        <button class="ab ab-e" onclick="editCustomPage('${cp.id}')" title="Edit">Edit</button>
+        <button class="ab ab-d" onclick="delCustomPage('${cp.id}')" title="Delete">Del</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ════ PDF CRUD ════ */
+function prepPF(p=null){
+  document.getElementById('pfTitle').textContent=p?'✏️ PDF Edit':'➕ Add PDF';
+  document.getElementById('pfId').value=p?.id||'';
+  document.getElementById('pfName').value=p?.name||'';
+  document.getElementById('pfCat').value=p?.category||'';
+  document.getElementById('pfSize').value=p?.size||'';
+  document.getElementById('pfUrl').value=p?.url||'';
+  document.getElementById('pfFileName').textContent='PDF file select करें';
+  document.getElementById('pfMsg').textContent='';
+  pdfB64='';
+}
+function editPDF(id){prepPF(pdfs.find(x=>x.id===id));aNav(null,'addPDFP')}
+function savePDF(){
+  reloadAll();
+  const name=document.getElementById('pfName').value.trim();
+  if(!name){toast('❌ Name ज़रूरी है!','err');return}
+  const url=document.getElementById('pfUrl').value.trim();
+  const id=document.getElementById('pfId').value;
+  const data={name,category:document.getElementById('pfCat').value.trim()||'General',size:document.getElementById('pfSize').value.trim(),url:url,data:pdfB64||undefined};
+  if(id){const i=pdfs.findIndex(x=>x.id===id);if(i>-1)pdfs[i]={...pdfs[i],...data};save(K.pdfs,pdfs);toast('✅ Updated!','ok')}
+  else{pdfs.push({id:uid(),...data});save(K.pdfs,pdfs);toast('✅ PDF added!','ok')}
+  reloadAll();updateCounts();document.getElementById('pfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'pdfP'),600);
+}
+function delPDF(id){
+  confirm2('PDF Delete?','',()=>{
+    reloadAll();save(K.pdfs,pdfs.filter(x=>x.id!==id));reloadAll();updateCounts();renderPDFTbl();toast('🗑 Deleted','ok');
+  });
+}
+
+/* ════ FORMAT ════ */
+function fmt(type){
+  const ta=document.getElementById('tfNotes');if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.substring(s,e);
+  const mp={h1:`# ${sel||'H1'}\n`,h2:`## ${sel||'H2'}\n`,h3:`### ${sel||'H3'}\n`,b:`**${sel||'bold'}**`,ul:`\n- ${sel||'item'}\n- item\n`,ol:`\n1. ${sel||'item'}\n2. item\n`,tbl:`\n| Col 1 | Col 2 |\n|---|---|\n| data | data |\n`,tip:`\n💡 ${sel||'tip'}\n`,imp:`\n⭐ ${sel||'important'}\n`,eg:`\n✅ ${sel||'example'}\n`,div:`\n---\n`};
+  ta.value=ta.value.substring(0,s)+(mp[type]||'')+ta.value.substring(e);ta.focus();
+}
+
+/* ════ ABOUT PHOTO ════ */
+function loadAboutPhotoAdmin(){
+  const photo=localStorage.getItem('ss_about_photo');
+  const img=document.getElementById('aboutPhotoPreviewImg');
+  const placeholder=document.getElementById('aboutPhotoPlaceholderAdmin');
+  if(photo&&img){
+    img.src=photo;
+    img.style.display='block';
+    if(placeholder)placeholder.style.display='none';
+  }else if(img){
+    img.style.display='none';
+    if(placeholder)placeholder.style.display='block';
+  }
+}
+function handleAboutPhoto(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>500000){
+    toast('Photo 500KB se chhota hona chahiye!','err');
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const b64=e.target.result;
+    localStorage.setItem('ss_about_photo',b64);
+    loadAboutPhotoAdmin();
+    toast('Photo saved!','ok');
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+function removeAboutPhoto(){
+  localStorage.removeItem('ss_about_photo');
+  loadAboutPhotoAdmin();
+  toast('Photo removed!','ok');
+}
+
+/* ════ PASSWORD CHANGE ════ */
+function changePassword(){
+  const current=document.getElementById('pwCurrent').value;
+  const newPw=document.getElementById('pwNew').value;
+  const confirm=document.getElementById('pwConfirm').value;
+  const msgEl=document.getElementById('pwMsg');
+  
+  // Get stored password or default
+  const storedPass=localStorage.getItem('ssc_admin_pass')||ADMIN_PASS;
+  
+  if(current!==storedPass){
+    msgEl.textContent='Current password galat hai!';msgEl.style.color='#dc2626';return;
+  }
+  if(newPw.length<6){
+    msgEl.textContent='New password kam se kam 6 characters hona chahiye!';msgEl.style.color='#dc2626';return;
+  }
+  if(newPw!==confirm){
+    msgEl.textContent='New passwords match nahi kar rahe!';msgEl.style.color='#dc2626';return;
+  }
+  
+  // Save new password
+  localStorage.setItem('ssc_admin_pass',newPw);
+  msgEl.textContent='Password successfully updated!';msgEl.style.color='#16a34a';
+  document.getElementById('pwCurrent').value='';
+  document.getElementById('pwNew').value='';
+  document.getElementById('pwConfirm').value='';
+  toast('Password updated!','ok');
+}
+
+/* ════ IMPORT/EXPORT ════ */
+let importData=null;
+
+function exportAllData(){
+  reloadAll();
+  const data={
+    version:'1.0',
+    exportedAt:new Date().toISOString(),
+    courses,modules,topics,users,batches,slides,pdfs,notices,announcements
+  };
+  downloadFile(JSON.stringify(data,null,2),'ssc_full_backup_'+Date.now()+'.json','application/json');
+  toast('Backup downloaded!','ok');
+}
+
+function exportData(type){
+  reloadAll();
+  if(type==='users'){
+    // Export students as CSV
+    const students=users.filter(u=>u.role==='student');
+    if(!students.length){toast('No students to export!','err');return}
+    let csv='name,email,password,batch\n';
+    students.forEach(s=>{
+      const batch=batches.find(b=>b.id===s.batchId)?.name||'';
+      csv+=`"${s.name}","${s.email}","${s.pass}","${batch}"\n`;
+    });
+    downloadFile(csv,'students_'+Date.now()+'.csv','text/csv');
+  }else if(type==='courses'){
+    downloadFile(JSON.stringify({courses,modules,topics},null,2),'courses_'+Date.now()+'.json','application/json');
+  }else if(type==='pdfs'){
+    downloadFile(JSON.stringify(pdfs,null,2),'pdfs_'+Date.now()+'.json','application/json');
+  }
+  toast('Export complete!','ok');
+}
+
+function downloadFile(content,filename,type){
+  const blob=new Blob([content],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function previewImport(input){
+  const file=input.files[0];
+  if(!file){importData=null;document.getElementById('importPreview').style.display='none';document.getElementById('importBtn').disabled=true;return}
+  
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const content=e.target.result;
+    const ext=file.name.split('.').pop().toLowerCase();
+    
+    try{
+      if(ext==='json'){
+        const data=JSON.parse(content);
+        importData={type:'json',data};
+        let info='JSON Backup detected:<br>';
+        if(data.courses)info+=`- ${data.courses.length} courses<br>`;
+        if(data.modules)info+=`- ${data.modules.length} modules<br>`;
+        if(data.topics)info+=`- ${data.topics.length} topics<br>`;
+        if(data.users)info+=`- ${data.users.length} users<br>`;
+        if(data.pdfs)info+=`- ${data.pdfs.length} PDFs<br>`;
+        document.getElementById('importInfo').innerHTML=info;
+      }else if(ext==='csv'){
+        const lines=content.trim().split('\n');
+        const headers=lines[0].split(',').map(h=>h.trim().replace(/"/g,'').toLowerCase());
+        const rows=lines.slice(1).filter(l=>l.trim());
+        importData={type:'csv',headers,rows};
+        document.getElementById('importInfo').innerHTML=`CSV file: ${rows.length} rows detected<br>Headers: ${headers.join(', ')}`;
+      }
+      document.getElementById('importPreview').style.display='block';
+      document.getElementById('importBtn').disabled=false;
+    }catch(err){
+      toast('File read error!','err');
+      importData=null;
+      document.getElementById('importPreview').style.display='none';
+      document.getElementById('importBtn').disabled=true;
+    }
+  };
+  reader.readAsText(file);
+}
+
+function doImport(){
+  if(!importData){toast('No file selected!','err');return}
+  
+  reloadAll();
+  
+  if(importData.type==='json'){
+    const d=importData.data;
+    // Merge data (avoid duplicates by ID)
+    if(d.courses){
+      d.courses.forEach(c=>{if(!courses.find(x=>x.id===c.id))courses.push(c)});
+      save(K.c,courses);
+    }
+    if(d.modules){
+      d.modules.forEach(m=>{if(!modules.find(x=>x.id===m.id))modules.push(m)});
+      save(K.m,modules);
+    }
+    if(d.topics){
+      d.topics.forEach(t=>{if(!topics.find(x=>x.id===t.id))topics.push(t)});
+      save(K.t,topics);
+    }
+    if(d.users){
+      d.users.forEach(u=>{if(!users.find(x=>x.id===u.id||x.email===u.email))users.push(u)});
+      save(K.users,users);
+    }
+    if(d.batches){
+      d.batches.forEach(b=>{if(!batches.find(x=>x.id===b.id))batches.push(b)});
+      save(K.batches,batches);
+    }
+    if(d.pdfs){
+      d.pdfs.forEach(p=>{if(!pdfs.find(x=>x.id===p.id))pdfs.push(p)});
+      save(K.pdfs,pdfs);
+    }
+    if(d.slides){
+      d.slides.forEach(s=>{if(!slides.find(x=>x.id===s.id))slides.push(s)});
+      save(K.slides,slides);
+    }
+    if(d.notices){
+      d.notices.forEach(n=>{if(!notices.find(x=>x.id===n.id))notices.push(n)});
+      save(K.notices,notices);
+    }
+    if(d.announcements){
+      d.announcements.forEach(a=>{if(!announcements.find(x=>x.id===a.id))announcements.push(a)});
+      save(K.announcements,announcements);
+    }
+    toast('JSON data imported!','ok');
+  }else if(importData.type==='csv'){
+    // Import students from CSV
+    const {headers,rows}=importData;
+    const nameIdx=headers.indexOf('name');
+    const emailIdx=headers.indexOf('email');
+    const passIdx=headers.indexOf('password');
+    const batchIdx=headers.indexOf('batch');
+    
+    if(nameIdx===-1||emailIdx===-1){
+      toast('CSV must have name and email columns!','err');return;
+    }
+    
+    let imported=0;
+    rows.forEach(row=>{
+      const cols=row.split(',').map(c=>c.trim().replace(/"/g,''));
+      const email=cols[emailIdx];
+      if(email&&!users.find(u=>u.email===email)){
+        const batchName=batchIdx>-1?cols[batchIdx]:'';
+        const batch=batches.find(b=>b.name.toLowerCase()===batchName.toLowerCase());
+        users.push({
+          id:uid(),
+          name:cols[nameIdx]||'Student',
+          email,
+          pass:passIdx>-1?cols[passIdx]:'student123',
+          role:'student',
+          batchId:batch?.id||''
+        });
+        imported++;
+      }
+    });
+    save(K.users,users);
+    toast(`${imported} students imported!`,'ok');
+  }
+  
+  reloadAll();
+  updateCounts();
+  document.getElementById('importFile').value='';
+  document.getElementById('importPreview').style.display='none';
+  document.getElementById('importBtn').disabled=true;
+  importData=null;
+}
+
+/* ════ SEARCH FILTER ════ */
+function filterTable(tableId,query){
+  const rows=document.querySelectorAll(`#${tableId} tbody tr`);
+  const q=query.toLowerCase();
+  rows.forEach(row=>{
+    const text=row.textContent.toLowerCase();
+    row.style.display=text.includes(q)?'':'none';
+  });
+}
+
+/* ════ UTILS ════ */
+function cl(id){document.getElementById(id)?.classList.remove('show')}
+function confirm2(title,sub,cb){
+  document.getElementById('cTitle').textContent=title;
+  document.getElementById('cSub2').textContent=sub;
+  document.getElementById('cBtn').onclick=()=>{cb();cl('cOv')};
+  document.getElementById('cOv').classList.add('show');
+}
+function toast(msg,type='ok'){const el=document.getElementById('tst');el.textContent=msg;el.className=`toast show t-${type}`;setTimeout(()=>el.classList.remove('show'),2800)}
+function emptyRow(cols,msg){return`<tr><td colspan="${cols}" style="text-align:center;padding:28px;color:var(--ink3)">${msg}</td></tr>`}
+</script>
+</body>
+</html>
