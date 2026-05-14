@@ -5,11 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#1e293b">
 <title>Sonu Sir's Classes</title>
+<!-- Preconnect for faster loading -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://firestore.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
+/* INSTANT LOADING SCREEN */
+#appLoader{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px}
+#appLoader .spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite}
+#appLoader .text{color:#64748b;font-size:13px;font-family:system-ui,sans-serif}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;
@@ -362,7 +373,8 @@ img{display:block;max-width:100%}
 .qs-pending{background:var(--ylt);color:var(--yellow)}
 
 /* ─── QUIZ PLAYER ─── */
-.quiz-player{background:var(--surf);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden;box-shadow:var(--sh)}
+.quiz-player{background:var(--surf);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden;box-shadow:var(--sh);width:100%;box-sizing:border-box}
+@media(min-width:768px){.quiz-player{max-width:700px;margin:0 auto}}
 .qp-hd{padding:16px;background:linear-gradient(135deg,#d97706,#ea580c);color:#fff}
 .qp-title{font-size:15px;font-weight:800;margin-bottom:2px}
 .qp-meta{font-size:11px;opacity:.75}
@@ -527,7 +539,10 @@ img{display:block;max-width:100%}
 .cf-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .cf-submit svg{width:22px;height:22px}
 
-/* FOOTER */
+/* LOADING SPINNER */
+  @keyframes spin{to{transform:rotate(360deg)}}
+  
+  /* FOOTER */
   .footer{background:#0f172a;padding:20px 16px;text-align:center;border-top:1px solid rgba(255,255,255,.08)}
   .footer-copy{font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px}
   .footer-dev{font-size:11px;color:rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;gap:5px}
@@ -535,8 +550,10 @@ img{display:block;max-width:100%}
 </style>
 </head>
 <body>
-
-<!-- NAV -->
+  <!-- LOADING SCREEN (shows instantly) -->
+  <div id="appLoader"><div class="spinner"></div><div class="text">Loading...</div></div>
+  
+  <!-- NAV -->
 <nav class="nav">
   <div class="nav-in">
     <a class="nav-brand" href="#" onclick="goHome()">
@@ -970,27 +987,28 @@ img{display:block;max-width:100%}
 
 <!-- ═══ QUIZ PLAYER ═══ -->
 <div id="vQuizPlayer" class="view">
-  <div style="margin-top:var(--nav-h);padding:16px 16px 100px;max-width:700px;margin-left:auto;margin-right:auto">
+  <div style="margin-top:var(--nav-h);padding:16px 16px 100px;max-width:800px;margin-left:auto;margin-right:auto;width:100%;box-sizing:border-box">
     <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px">
-      <button onclick="exitQuiz()" style="padding:7px 14px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);font-size:12px;font-weight:700;border:1.5px solid var(--border)">Back</button>
-      <div style="font-size:13px;font-weight:700;color:var(--ink2)" id="qpBc"></div>
+      <button onclick="exitQuiz()" style="padding:7px 14px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);font-size:12px;font-weight:700;border:1.5px solid var(--border);flex-shrink:0">← Back</button>
+      <div style="font-size:13px;font-weight:700;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="qpBc"></div>
     </div>
-    <div class="quiz-player" id="quizPlayer"></div>
+    <div class="quiz-player" id="quizPlayer" style="width:100%;box-sizing:border-box;overflow:hidden"></div>
   </div>
 </div>
 
 <!-- ═══ CUSTOM PAGE ═══ -->
 <div id="vCustomPage" class="view">
-  <div style="margin-top:var(--nav-h);padding:16px 16px 100px;max-width:1000px;margin-left:auto;margin-right:auto">
-    <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px">
-      <button onclick="goHome()" style="padding:7px 14px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);font-size:12px;font-weight:700;border:1.5px solid var(--border)">Back to Home</button>
-      <div style="font-size:13px;font-weight:700;color:var(--ink2)" id="cpBc"></div>
-    </div>
-    <!-- Simple HTML content container -->
-    <div id="customPageContent" style="background:var(--surf);border-radius:var(--r16);padding:20px;border:1px solid var(--border);display:none"></div>
-    <!-- Full HTML document iframe -->
-    <iframe id="customPageFrame" style="width:100%;border:none;border-radius:var(--r16);background:#fff;display:none;min-height:80vh"></iframe>
+  <!-- Top bar - always visible -->
+  <div style="position:sticky;top:var(--nav-h);z-index:10;background:var(--surf);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px">
+    <button onclick="goHome()" style="padding:7px 14px;border-radius:var(--r8);background:var(--bg);color:var(--ink2);font-size:12px;font-weight:700;border:1.5px solid var(--border);flex-shrink:0">← Back</button>
+    <div style="font-size:13px;font-weight:700;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="cpBc"></div>
   </div>
+  <!-- HTML snippet content -->
+  <div id="customPageContent" style="padding:16px 16px 100px;max-width:1000px;margin:0 auto;display:none"></div>
+  <!-- Full HTML doc iframe (for <!DOCTYPE html> pages) -->
+  <iframe id="customPageFrame" style="width:100%;border:none;display:none;height:calc(100vh - var(--nav-h) - 50px)" scrolling="yes"></iframe>
+  <!-- External URL iframe -->
+  <iframe id="customPageLinkFrame" style="width:100%;border:none;display:none;height:calc(100vh - var(--nav-h) - 50px)" allow="fullscreen" scrolling="yes"></iframe>
 </div>
 
 <!-- FULLSCREEN -->
@@ -1025,18 +1043,16 @@ img{display:block;max-width:100%}
   // Initialize Firebase
   let db;
   let firebaseReady = false;
+  let dataLoaded = false;
   
   try {
-    if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      firebaseReady = true;
-      console.log("[v0] Firebase connected successfully!");
-    } else {
-      console.log("[v0] Firebase not configured - using localStorage fallback");
-    }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    // Enable offline persistence for better data availability
+    db.enablePersistence({synchronizeTabs: true}).catch(e => console.log("Persistence error:", e));
+    firebaseReady = true;
   } catch(e) {
-    console.log("[v0] Firebase init error, using localStorage:", e);
+    console.log("Firebase init error:", e);
   }
   
   /* ════ STORE ════ */
@@ -1091,24 +1107,33 @@ img{display:block;max-width:100%}
   // Initial sync load from localStorage
   function ra(){C=ldLocal(K.c);M=ldLocal(K.m);T=ldLocal(K.t);U=ldLocal(K.users);B=ldLocal(K.batches);PDFs=ldLocal(K.pdfs);Notices=ldLocal(K.notices);Announcements=ldLocal(K.announcements);QSecs=ldLocal(K.quizSecs);QChs=ldLocal(K.quizChs);Scores=ldLocal(K.scores);Slides=ldLocal(K.slides);CustomPages=ldLocal(K.customPages)}
   
-  // Async reload from Firebase
+  // Show/hide loading screen
+  function showLoading(show){
+    const loader = document.getElementById('appLoader');
+    if(loader) loader.style.display = show ? 'flex' : 'none';
+  }
+  
+  // Async reload from Firebase - ALWAYS load from Firebase first
   async function raFirebase(){
-    if(!firebaseReady) { ra(); return; }
+    if(!firebaseReady) { ra(); dataLoaded=true; return; }
+    showLoading(true);
     try {
       [C,M,T,U,B,PDFs,Notices,Announcements,QSecs,QChs,Scores,Slides,CustomPages] = await Promise.all([
         ldFirebase(K.c), ldFirebase(K.m), ldFirebase(K.t), ldFirebase(K.users), ldFirebase(K.batches),
         ldFirebase(K.pdfs), ldFirebase(K.notices), ldFirebase(K.announcements), ldFirebase(K.quizSecs),
         ldFirebase(K.quizChs), ldFirebase(K.scores), ldFirebase(K.slides), ldFirebase(K.customPages)
       ]);
-      // Also save to localStorage for offline support
+      // Save to localStorage for offline support
       svLocal(K.c,C);svLocal(K.m,M);svLocal(K.t,T);svLocal(K.users,U);svLocal(K.batches,B);
       svLocal(K.pdfs,PDFs);svLocal(K.notices,Notices);svLocal(K.announcements,Announcements);
       svLocal(K.quizSecs,QSecs);svLocal(K.quizChs,QChs);svLocal(K.scores,Scores);svLocal(K.slides,Slides);svLocal(K.customPages,CustomPages);
-      console.log("[v0] Data synced from Firebase");
+      dataLoaded = true;
     } catch(e) {
-      console.log("[v0] Firebase sync error:", e);
-      ra();
+      console.log("Firebase sync error:", e);
+      ra(); // Fallback to localStorage
+      dataLoaded = true;
     }
+    showLoading(false);
   }
 
 /* SEED */
@@ -1123,7 +1148,7 @@ function seed(){
     sv(K.t,[
       {id:'t1',mId:'m1',name:'KYP Introduction',emoji:'📖',notes:`# KYP का परिचय\n\nKYP = **Know Your Product** — Bihar सरकार की योजना।\n\n## उद्देश्य\n\n- Digital literacy\n- रोज़गार\n\n�� यह course मुफ्त है!\n\n| विवरण | ज��नकारी |\n|---|---|\n| अवधि | 3 माह |\n| Fees | निःशुल्क |`,pptLink:'https://www.canva.com/design/DAG360VDimA/7mcuGn-uI_tR3b--BkQ0LA/view'},
       {id:'t2',mId:'m1',name:'Introduction Myself',emoji:'👤',notes:`# अपना परिचय\n\nनमस्ते, मेरा नाम **[नाम]** है।\n\n💡 आत्मविश्वास से बोलें!\n\n⭐ English में भी practice करें।`,pptLink:''},
-      {id:'t3',mId:'m2',name:'Computer का परिचय',emoji:'🖥️',notes:`# Computer क्या है?\n\nComputer एक **इलेक्ट्रॉनिक मशीन** है।\n\n| Step | Example |\n|---|---|\n| Input | Keyboard |\n| Process | CPU |\n| Output | Monitor |`,pptLink:'https://www.canva.com/design/DAG4zdjdOko/QtGfaLCqhqZ67k9bs0hAmw/view'},
+      {id:'t3',mId:'m2',name:'Computer का परिचय',emoji:'🖥️',notes:`# Computer क्या है?\n\nComputer एक **इल���क्ट्रॉनिक मशीन** है।\n\n| Step | Example |\n|---|---|\n| Input | Keyboard |\n| Process | CPU |\n| Output | Monitor |`,pptLink:'https://www.canva.com/design/DAG4zdjdOko/QtGfaLCqhqZ67k9bs0hAmw/view'},
       {id:'t4',mId:'m2',name:'नंबर सिस्टम',emoji:'🔢',notes:`# Number System\n\n| System | Base |\n|---|---|\n| Decimal | 10 |\n| Binary | 2 |\n\n💡 Computer **Binary** में काम करता है!`,pptLink:''},
       {id:'t5',mId:'m3',name:'MS Word',emoji:'📝',notes:`# MS Word\n\n| Shortcut | काम |\n|---|---|\n| Ctrl+B | Bold |\n| Ctrl+S | Save |\n\n💡 Extension: **.docx**`,pptLink:''},
     ]);
@@ -1279,39 +1304,60 @@ function openCustomPageById(pageId){
   const categories={services:'Services',about:'About Me',other:'Other'};
   document.getElementById('cpBc').textContent=`${categories[page.category]||page.category} / ${page.title}`;
   
-  const htmlCode=page.htmlCode||'<p>No content</p>';
   const contentEl=document.getElementById('customPageContent');
   const frameEl=document.getElementById('customPageFrame');
+  const linkFrameEl=document.getElementById('customPageLinkFrame');
   
-  // Check if it's a full HTML document (has <!DOCTYPE or <html or <head or <body tags)
-  const isFullHtml=htmlCode.trim().toLowerCase().startsWith('<!doctype')||
-                   htmlCode.includes('<html')||
-                   htmlCode.includes('<head>')||
-                   htmlCode.includes('<body>');
+  // Reset all
+  contentEl.style.display='none';
+  frameEl.style.display='none';
+  linkFrameEl.style.display='none';
+  contentEl.innerHTML='';
+  frameEl.srcdoc='';
+  linkFrameEl.src='';
   
-  if(isFullHtml){
-    // Use iframe for full HTML documents
-    contentEl.style.display='none';
-    frameEl.style.display='block';
-    frameEl.srcdoc=htmlCode;
-    // Auto-resize iframe based on content
-    frameEl.onload=function(){
-      try{
-        const h=frameEl.contentWindow.document.body.scrollHeight;
-        frameEl.style.height=(h+50)+'px';
-      }catch(e){}
-    };
-  }else{
-    // Use innerHTML for simple HTML snippets
-    frameEl.style.display='none';
-    contentEl.style.display='block';
-    contentEl.innerHTML=htmlCode;
+  // CASE 1: External link
+  if(page.pageLink && page.pageLink.trim()){
+    linkFrameEl.style.display='block';
+    linkFrameEl.src=page.pageLink.trim();
+  } else {
+    const htmlCode=page.htmlCode||'<p style="padding:20px;color:#64748b">No content added yet.</p>';
+    // CASE 2: Full HTML doc
+    const isFullHtml=htmlCode.trim().toLowerCase().startsWith('<!doctype')||
+                     htmlCode.includes('<html')||
+                     htmlCode.includes('<head>')||
+                     htmlCode.includes('<body>');
+    if(isFullHtml){
+      frameEl.style.display='block';
+      // Inject responsive meta in full HTML
+      let inject=htmlCode;
+      if(!inject.includes('viewport')){
+        inject=inject.replace('<head>','<head><meta name="viewport" content="width=device-width,initial-scale=1">');
+      }
+      frameEl.srcdoc=inject;
+      frameEl.onload=function(){
+        try{
+          const h=frameEl.contentWindow.document.documentElement.scrollHeight;
+          if(h>200) frameEl.style.height=Math.min(h+40, window.innerHeight*0.85)+'px';
+        }catch(e){}
+      };
+    } else {
+      // CASE 3: HTML snippet - wrap in responsive container
+      contentEl.style.display='block';
+      contentEl.innerHTML=`<div style="width:100%;max-width:100%;overflow-x:auto;box-sizing:border-box">${htmlCode}</div>`;
+      // Fix any iframes/embeds inside snippet
+      contentEl.querySelectorAll('iframe,embed').forEach(el=>{
+        el.style.maxWidth='100%';
+        el.style.width='100%';
+        if(!el.style.height) el.style.height='500px';
+      });
+    }
   }
   
   setBc([{t:'Home',fn:'goHome()'},{t:categories[page.category]||page.category},{t:page.title}]);
   showView('vCustomPage');
   closeMobileTabs();
-  }
+}
 
 /* ════ HOME ════ */
 function renderHome(){
@@ -1642,10 +1688,16 @@ function renderQuizPlayer(ch,uid){
     const title=quizData.title||ch.name;
     renderMCQQuiz(el,qs,title,ch,uid);
   } else {
-    // Render as HTML embed
-    el.innerHTML=`<div style="padding:14px">
+    // Render as HTML embed - fully responsive
+    el.innerHTML=`<div style="padding:14px;width:100%;box-sizing:border-box">
       <div style="font-size:14px;font-weight:800;margin-bottom:12px;color:var(--ink)">${ch.name}</div>
-      <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border)">${code}</div>
+      <div style="border-radius:var(--r12);overflow:hidden;border:1px solid var(--border);width:100%;box-sizing:border-box">
+        <iframe id="quizEmbedFrame" srcdoc="${code.replace(/"/g,"&quot;").replace(/`/g,"&#96;")}" 
+          style="width:100%;border:none;min-height:500px;display:block" 
+          scrolling="yes"
+          onload="(function(f){try{var h=f.contentWindow.document.documentElement.scrollHeight||f.contentWindow.document.body.scrollHeight;if(h>100)f.style.height=(h+30)+'px';}catch(e){}})(this)">
+        </iframe>
+      </div>
     </div>`;
   }
 }
@@ -1894,19 +1946,35 @@ function parseNotes(raw){
 function toast(msg,type='ok'){const el=document.getElementById('tst');el.textContent=msg;el.className=`toast show t-${type}`;setTimeout(()=>el.classList.remove('show'),2800)}
 
 /* START */
-// Initial load from localStorage, then sync from Firebase
-ra();
-renderHome();
-renderNavTabs();
-
-// Load data from Firebase in background
-if(firebaseReady) {
-  raFirebase().then(() => {
-    renderHome();
-    renderNavTabs();
-    console.log("[v0] UI refreshed with Firebase data");
-  });
+// Always load from Firebase first (shows loading screen)
+async function initApp(){
+  showLoading(true);
+  await raFirebase();
+  renderHome();
+  renderNavTabs();
+  loadAboutPhoto();
+  showLoading(false);
 }
+initApp();
+
+// Tab switch / browser back pe auto re-sync
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && firebaseReady){
+    raFirebase().then(() => {
+      renderHeroSlider();
+      renderNavTabs();
+    });
+  }
+});
+
+window.addEventListener('pageshow', (e) => {
+  if(e.persisted && firebaseReady){
+    raFirebase().then(() => {
+      renderHeroSlider();
+      renderNavTabs();
+    });
+  }
+});
 </script>
 </body>
 </html>

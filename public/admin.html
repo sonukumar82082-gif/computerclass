@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Sonu Sir's Classes</title>
+<!-- Preconnect for faster loading -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com">
+<link rel="preconnect" href="https://firestore.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* INSTANT LOADING */
+#adminLoader{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px}
+#adminLoader .spinner{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite}
+#adminLoader .text{color:#64748b;font-size:13px;font-family:system-ui,sans-serif}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -223,10 +235,12 @@ input,select,textarea{font-family:var(--font);outline:none}
 
 @media(max-width:900px){.admin-wrap{grid-template-columns:1fr}.admin-sb{display:none}.fr2,.fr3{grid-template-columns:1fr}}
 </style>
-</head>
+  </head>
 <body>
-
-<!-- ═══ LOGIN ═══ -->
+  <!-- LOADING SCREEN -->
+  <div id="adminLoader"><div class="spinner"></div><div class="text">Loading Admin...</div></div>
+  
+  <!-- ═══ LOGIN ═══ -->
 <div id="vLogin" class="view on">
   <div class="login-page">
     <div class="login-bg"></div><div class="login-dots"></div>
@@ -784,8 +798,17 @@ Ya HTML code paste karein (iframe, embed etc.)'></textarea>
             <div class="field"><label>Page Title *</label><input type="text" id="cpfTitle2" placeholder="jaise: Web Development Course"></div>
             <div class="field"><label>Short Description</label><input type="text" id="cpfDesc" placeholder="Brief description..."></div>
             <div class="field"><label>Order</label><input type="number" id="cpfOrder" min="1" placeholder="1"></div>
+            <!-- Content Type Toggle -->
             <div class="field">
-              <label>Page HTML Code *</label>
+              <label>Content Type *</label>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <button type="button" id="cpfTypeCode" onclick="setCPFType('code')" style="flex:1;padding:9px;border-radius:8px;font-size:12px;font-weight:700;border:2px solid var(--blue);background:var(--blue-lt);color:var(--blue);transition:.2s">📝 HTML Code</button>
+                <button type="button" id="cpfTypeLink" onclick="setCPFType('link')" style="flex:1;padding:9px;border-radius:8px;font-size:12px;font-weight:700;border:2px solid var(--border);background:var(--bg);color:var(--ink2);transition:.2s">🔗 External Link</button>
+              </div>
+            </div>
+            <!-- HTML Code Field -->
+            <div class="field" id="cpfCodeField">
+              <label>Page HTML Code</label>
               <textarea id="cpfCode" rows="12" placeholder='Yahan apna HTML code paste karein...
 Ye code directly render hoga page mein.
 
@@ -795,9 +818,18 @@ Example:
   <p>Content here...</p>
   <img src="image-url.jpg">
 </div>'></textarea>
+              <div style="font-size:11px;color:var(--ink3);margin-top:8px;background:#eff6ff;padding:10px;border-radius:8px">
+                Kisi bhi website ka HTML code yahan paste karein. Services/About/Other tab mein render hoga.
+              </div>
             </div>
-            <div style="font-size:11px;color:var(--ink3);margin-bottom:12px;background:#eff6ff;padding:10px;border-radius:8px">
-              Aap kisi bhi website ka HTML code yahan paste kar sakte hain. Ye code Services/About/Other tab mein show hoga.
+            <!-- Link Field -->
+            <div class="field" id="cpfLinkField" style="display:none">
+              <label>Page URL / Link</label>
+              <input type="url" id="cpfLink" placeholder="https://example.com/your-page">
+              <div style="font-size:11px;color:var(--ink3);margin-top:8px;background:#f0fdf4;padding:10px;border-radius:8px">
+                🔗 Koi bhi external URL paste karein — wo page ek full-screen iframe mein open hoga.<br>
+                <span style="color:var(--ink3)">Example: Google Form, YouTube, Google Sites, Notion page etc.</span>
+              </div>
             </div>
             <div class="factions"><button class="btn-s" onclick="saveCustomPage()">Save</button><button class="btn-c" onclick="aNav(null,'customPagesP')">Cancel</button><span class="fmsg" id="cpfMsg"></span></div>
           </div></div>
@@ -871,16 +903,18 @@ Example:
   let firebaseReady = false;
   
   try {
-    if(firebaseConfig.apiKey !== "YOUR_API_KEY") {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      firebaseReady = true;
-      console.log("[v0] Admin: Firebase connected!");
-    } else {
-      console.log("[v0] Admin: Firebase not configured - using localStorage");
-    }
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    db.enablePersistence({synchronizeTabs: true}).catch(e => {});
+    firebaseReady = true;
   } catch(e) {
-    console.log("[v0] Admin: Firebase init error:", e);
+    console.log("Admin Firebase init error:", e);
+  }
+  
+  // Show/hide loading
+  function showAdminLoading(show){
+    const loader = document.getElementById('adminLoader');
+    if(loader) loader.style.display = show ? 'flex' : 'none';
   }
   
   /* ════ STORE ════ */
@@ -940,6 +974,7 @@ Example:
   // Async reload from Firebase
   async function reloadFromFirebase(){
     if(!firebaseReady) { reloadAll(); return; }
+    showAdminLoading(true);
     try {
       [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages] = await Promise.all([
         loadFirebase(K.c), loadFirebase(K.m), loadFirebase(K.t), loadFirebase(K.users), loadFirebase(K.batches),
@@ -950,11 +985,11 @@ Example:
       saveLocal(K.c,courses);saveLocal(K.m,modules);saveLocal(K.t,topics);saveLocal(K.users,users);
       saveLocal(K.batches,batches);saveLocal(K.slides,slides);saveLocal(K.pdfs,pdfs);saveLocal(K.notices,notices);
       saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);saveLocal(K.customPages,customPages);
-      console.log("[v0] Admin data synced from Firebase");
     } catch(e) {
-      console.log("[v0] Firebase sync error:", e);
+      console.log("Firebase sync error:", e);
       reloadAll();
     }
+    showAdminLoading(false);
   }
   
   reloadAll();
@@ -966,6 +1001,31 @@ Example:
       console.log("[v0] Admin UI refreshed with Firebase data");
     });
   }
+
+  // Tab switch / browser back pe auto re-sync
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible' && firebaseReady){
+      reloadFromFirebase().then(() => {
+        updateCounts();
+        const activePanel = document.querySelector('.a-panel.on');
+        if(activePanel) renderPanel(activePanel.id);
+        fillSelects();
+        console.log('[v0] Re-synced on tab focus');
+      });
+    }
+  });
+
+  // Browser back button pe bhi sync
+  window.addEventListener('pageshow', (e) => {
+    if(e.persisted && firebaseReady){
+      reloadFromFirebase().then(() => {
+        updateCounts();
+        const activePanel = document.querySelector('.a-panel.on');
+        if(activePanel) renderPanel(activePanel.id);
+        fillSelects();
+      });
+    }
+  });
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 
 /* Mobile Sidebar */
@@ -1096,18 +1156,42 @@ function doLogout(){
 
 /* ════ ADMIN NAV ════ */
 function aNav(btn,pid){
-  reloadAll();
   document.querySelectorAll('.asb-item').forEach(b=>b.classList.remove('on'));
   if(btn)btn.classList.add('on');
   document.querySelectorAll('.a-panel').forEach(p=>p.classList.remove('on'));
   document.getElementById(pid)?.classList.add('on');
   const titles={dashP:'Dashboard',coursesP:'Courses',modsP:'Modules',topicsP:'Topics',studentsP:'Students',staffP:'Staff',batchesP:'Batches',slidesP:'Hero Banners',annP:'Announcements',noticesP:'Notices',pdfP:'PDF Library',quizP:'Quiz Manager',customPagesP:'Custom Pages',settingsP:'Change Password',importExportP:'Import/Export Data',addCourseP:'Course Add/Edit',addModP:'Module Add/Edit',addTopicP:'Topic Add/Edit',addUserP:'User Add/Edit',addBatchP:'Batch Add/Edit',addSlideP:'Banner Add/Edit',addAnnP:'Announcement Add/Edit',addPDFP:'PDF Add',addNoticeP:'Notice Add/Edit',addQuizSecP:'Quiz Section Add/Edit',addQuizChP:'Quiz Chapter Add/Edit',addCustomPageP:'Custom Page Add/Edit'};
   document.getElementById('aTopTitle').textContent=titles[pid]||'Admin';
-  renderPanel(pid);
+  const listPanels=['dashP','coursesP','modsP','topicsP','studentsP','staffP','batchesP','slidesP','annP','noticesP','pdfP','quizP','customPagesP','importExportP'];
+  if(listPanels.includes(pid)){
+    smartSync(()=>{ reloadAll(); updateCounts(); renderPanel(pid); fillSelects(); });
+  } else {
+    reloadAll(); renderPanel(pid); fillSelects();
+  }
   closeSidebar();
 }
 
 function renderAdmin(){updateCounts();renderPanel('dashP');fillSelects()}
+
+// Smart sync: localStorage se turant dikhao, Firebase se background mein refresh karo
+async function smartSync(callback){
+  reloadAll(); // Pehle localStorage se instant render
+  if(callback) callback();
+  if(firebaseReady){
+    try{
+      [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages] = await Promise.all([
+        loadFirebase(K.c),loadFirebase(K.m),loadFirebase(K.t),loadFirebase(K.users),loadFirebase(K.batches),
+        loadFirebase(K.slides),loadFirebase(K.pdfs),loadFirebase(K.notices),loadFirebase(K.announcements),
+        loadFirebase(K.quizSecs),loadFirebase(K.quizChs),loadFirebase(K.customPages)
+      ]);
+      // localStorage update karo fresh data se
+      saveLocal(K.c,courses);saveLocal(K.m,modules);saveLocal(K.t,topics);saveLocal(K.users,users);
+      saveLocal(K.batches,batches);saveLocal(K.slides,slides);saveLocal(K.pdfs,pdfs);saveLocal(K.notices,notices);
+      saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);saveLocal(K.customPages,customPages);
+      if(callback) callback(); // Firebase data se dobara render
+    } catch(e){ console.log('[sync] Firebase error:',e); }
+  }
+}
 
 function updateCounts(){
   reloadAll();
@@ -1149,7 +1233,7 @@ function renderDash(){
     <div class="sc"><div class="sc-ico" style="background:#eff6ff">📚</div><div class="sc-n">${courses.length}</div><div class="sc-l">Courses</div></div>
     <div class="sc"><div class="sc-ico" style="background:#ede9fe">🗂</div><div class="sc-n">${modules.length}</div><div class="sc-l">Modules</div></div>
     <div class="sc"><div class="sc-ico" style="background:#f0fdf4">📄</div><div class="sc-n">${topics.length}</div><div class="sc-l">Topics</div></div>
-    <div class="sc"><div class="sc-ico" style="background:#fffbeb">👨‍🎓</div><div class="sc-n">${users.filter(u=>u.role==='student').length}</div><div class="sc-l">Students</div></div>
+    <div class="sc"><div class="sc-ico" style="background:#fffbeb">👨‍���</div><div class="sc-n">${users.filter(u=>u.role==='student').length}</div><div class="sc-l">Students</div></div>
     <div class="sc"><div class="sc-ico" style="background:#f0fdf4">👨‍🏫</div><div class="sc-n">${users.filter(u=>u.role==='staff').length}</div><div class="sc-l">Staff</div></div>
     <div class="sc"><div class="sc-ico" style="background:#fff7ed">🏷</div><div class="sc-n">${batches.length}</div><div class="sc-l">Batches</div></div>
     <div class="sc"><div class="sc-ico" style="background:#e0f2fe">🎠</div><div class="sc-n">${slides.length}</div><div class="sc-l">Hero Banners</div></div>
@@ -1369,7 +1453,7 @@ function handlePDF(input){
   reader.readAsDataURL(file);
 }
 
-/* ════ COURSE CRUD ════ */
+/* ═��══ COURSE CRUD ════ */
 function prepCF(c=null){
   fillSelects();
   document.getElementById('cfTitle').textContent=c?'✏️ Course Edit':'➕ New Course';
@@ -2109,18 +2193,47 @@ function prepCPF(cp=null){
   document.getElementById('cpfTitle2').value=cp?.title||'';
   document.getElementById('cpfDesc').value=cp?.desc||'';
   document.getElementById('cpfOrder').value=cp?.order||1;
-  document.getElementById('cpfCode').value=cp?.htmlCode||'';
+  // Code or Link toggle restore
+  if(cp?.pageLink){
+    document.getElementById('cpfLink').value=cp.pageLink||'';
+    document.getElementById('cpfCode').value='';
+    setCPFType('link');
+  } else {
+    document.getElementById('cpfCode').value=cp?.htmlCode||'';
+    document.getElementById('cpfLink').value='';
+    setCPFType('code');
+  }
   document.getElementById('cpfMsg').textContent='';
+}
+function setCPFType(type){
+  const codeBtn=document.getElementById('cpfTypeCode');
+  const linkBtn=document.getElementById('cpfTypeLink');
+  const codeField=document.getElementById('cpfCodeField');
+  const linkField=document.getElementById('cpfLinkField');
+  if(type==='code'){
+    codeBtn.style.border='2px solid var(--blue)';codeBtn.style.background='var(--blue-lt)';codeBtn.style.color='var(--blue)';
+    linkBtn.style.border='2px solid var(--border)';linkBtn.style.background='var(--bg)';linkBtn.style.color='var(--ink2)';
+    codeField.style.display='block';linkField.style.display='none';
+  } else {
+    linkBtn.style.border='2px solid var(--blue)';linkBtn.style.background='var(--blue-lt)';linkBtn.style.color='var(--blue)';
+    codeBtn.style.border='2px solid var(--border)';codeBtn.style.background='var(--bg)';codeBtn.style.color='var(--ink2)';
+    codeField.style.display='none';linkField.style.display='block';
+  }
 }
 function editCustomPage(id){prepCPF(customPages.find(x=>x.id===id));aNav(null,'addCustomPageP')}
 function saveCustomPage(){
   reloadAll();
   const title=document.getElementById('cpfTitle2').value.trim();
   const category=document.getElementById('cpfCategory').value;
-  const code=document.getElementById('cpfCode').value.trim();
-  if(!title||!category||!code){toast('Category, Title aur Code zaruri hai!','err');return}
+  if(!title||!category){toast('Category aur Title zaruri hai!','err');return}
   const id=document.getElementById('cpfId').value;
-  const data={title,category,desc:document.getElementById('cpfDesc').value.trim(),order:parseInt(document.getElementById('cpfOrder').value)||1,htmlCode:code};
+  // Determine type: link or code
+  const isLinkType=document.getElementById('cpfLinkField').style.display!=='none';
+  const code=document.getElementById('cpfCode').value.trim();
+  const link=document.getElementById('cpfLink').value.trim();
+  if(isLinkType&&!link){toast('URL paste karein!','err');return}
+  if(!isLinkType&&!code){toast('HTML Code paste karein!','err');return}
+  const data={title,category,desc:document.getElementById('cpfDesc').value.trim(),order:parseInt(document.getElementById('cpfOrder').value)||1,htmlCode:isLinkType?'':code,pageLink:isLinkType?link:''};
   if(id){const i=customPages.findIndex(x=>x.id===id);if(i>-1)customPages[i]={...customPages[i],...data};save(K.customPages,customPages);toast('Updated!','ok')}
   else{customPages.push({id:uid(),...data});save(K.customPages,customPages);toast('Custom Page added!','ok')}
   reloadAll();updateCounts();document.getElementById('cpfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'customPagesP'),600);
