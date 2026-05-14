@@ -20,6 +20,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -366,6 +367,7 @@ input,select,textarea{font-family:var(--font);outline:none}
   <button class="mobile-menu-btn" onclick="openSidebar()">Menu</button>
   <div style="flex:1;min-width:0"><div class="at-title" id="aTopTitle">Dashboard</div><div class="at-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Admin Panel</div></div>
   <a href="index.html" target="_blank" class="nbtn nbtn-ghost" style="font-size:11px;white-space:nowrap">Site</a>
+  <button onclick="doLogout()" class="nbtn nbtn-ghost" style="font-size:11px;white-space:nowrap;color:#ef4444;border-color:#ef4444">🔒 Logout</button>
       </div>
       <div class="admin-cnt">
 
@@ -902,9 +904,11 @@ Example:
   let db;
   let firebaseReady = false;
   
+  let auth;
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
+    auth = firebase.auth();
     // Force long polling - WebChannel 404 fix for all networks
     db.settings({ experimentalForceLongPolling: true });
     db.enablePersistence({synchronizeTabs: true}).catch(e => {});
@@ -968,6 +972,10 @@ Example:
         });
         await addBatch.commit();
       }
+
+      // Firebase save ke baad fresh data reload karo — UI turant update ho
+      await reloadFromFirebase();
+      updateCounts();
       console.log("[v0] Saved to Firebase:", collection);
     } catch(e) {
       console.log("[v0] Firebase save error:", e);
@@ -976,7 +984,10 @@ Example:
   
   // Wrapper functions
   const load = k => loadLocal(k);
-  const save = (k,v) => { saveLocal(k,v); saveFirebase(k,v); };
+  const save = async (k,v) => { 
+    saveLocal(k,v); 
+    await saveFirebase(k,v);
+  };
   
   let courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages;
   
@@ -1061,38 +1072,64 @@ function closeSidebar(){
 let cThumbB64='',sThumbB64='',pdfB64='';
 
 /* ════ AUTH ════ */
-// Master Admin - ye kabhi change nahi hoga
 const MASTER_EMAIL='sonukumar82082@gmail.com';
 const MASTER_RECOVERY_KEY='SONU@MASTER@2025';
 const ADMIN_EMAIL='admin@kyp.com',ADMIN_PASS='admin@2025';
 
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById('lEmail').value.trim().toLowerCase();
   const p=document.getElementById('lPass').value;
   const err=document.getElementById('lErr');
-  const storedPass=localStorage.getItem('ssc_admin_pass')||ADMIN_PASS;
-  const storedEmail=localStorage.getItem('ssc_admin_email')||ADMIN_EMAIL;
+  const btn=document.querySelector('.login-btn');
   
-  // Master email se login - hamesha work karega
-  if(e===MASTER_EMAIL.toLowerCase() && p===MASTER_RECOVERY_KEY){
-    err.classList.remove('show');
-    document.getElementById('vLogin').classList.remove('on');
-    document.getElementById('vAdmin').classList.add('on');
-    renderAdmin();
-    toast('Master Admin Login Success!','ok');
-    return;
-  }
+  if(!e||!p){err.textContent='❌ Email aur Password dono bharo!';err.classList.add('show');return;}
   
-  // Normal admin login
-  if(e===storedEmail.toLowerCase() && p===storedPass){
-    err.classList.remove('show');
-    document.getElementById('vLogin').classList.remove('on');
-    document.getElementById('vAdmin').classList.add('on');
-    renderAdmin();
-  } else {
-    err.classList.add('show');
-    document.getElementById('lPass').value='';
+  btn.textContent='Logging in...';btn.disabled=true;
+  err.classList.remove('show');
+
+  try {
+    // Firebase Auth se login
+    await auth.signInWithEmailAndPassword(e, p);
+    // auth.onAuthStateChanged handle karega baaki kaam
+  } catch(firebaseErr) {
+    // Firebase Auth fail → fallback: master key check
+    if(e===MASTER_EMAIL.toLowerCase() && p===MASTER_RECOVERY_KEY){
+      showAdminPanel();
+      toast('Master Admin Login!','ok');
+    } else {
+      err.textContent='❌ Email ya Password galat hai!';
+      err.classList.add('show');
+      document.getElementById('lPass').value='';
+    }
+    btn.textContent='Admin Login';btn.disabled=false;
   }
+}
+
+function showAdminPanel(){
+  document.getElementById('vLogin').classList.remove('on');
+  document.getElementById('vAdmin').classList.add('on');
+  renderAdmin();
+}
+
+// Firebase Auth state listener — page reload pe bhi login maintain rahega
+if(auth){
+  auth.onAuthStateChanged(user => {
+    if(user){
+      // Logged in — admin panel dikhao
+      document.getElementById('vLogin').classList.remove('on');
+      document.getElementById('vAdmin').classList.add('on');
+      renderAdmin();
+    } else {
+      // Logged out — login page dikhao
+      document.getElementById('vLogin').classList.add('on');
+      document.getElementById('vAdmin').classList.remove('on');
+    }
+  });
+}
+
+async function doLogout(){
+  try{ await auth.signOut(); }catch(e){}
+  toast('Logged out!','ok');
 }
 
 // Recovery Functions
@@ -1164,12 +1201,7 @@ function doResetPassword(){
   document.getElementById('lEmail').value=email;
   document.getElementById('lPass').value='';
 }
-function doLogout(){
-  document.getElementById('vAdmin').classList.remove('on');
-  document.getElementById('vLogin').classList.add('on');
-  document.getElementById('lPass').value='';
-  toast('Logged out','ok');
-}
+
 
 /* ════ ADMIN NAV ════ */
 function aNav(btn,pid){
@@ -1492,17 +1524,17 @@ function saveCourse(){
   if(!name){toast('❌ Name ज़रूरी है!','err');return}
   const id=document.getElementById('cfId').value;
   const data={name,ico:document.getElementById('cfIco').value.trim()||'📚',desc:document.getElementById('cfDesc').value.trim(),clr:document.getElementById('cfClr').value.trim()||'#2563eb',bg:document.getElementById('cfBg').value.trim()||'#eff6ff',thumb:cThumbB64};
-  if(id){const i=courses.findIndex(x=>x.id===id);if(i>-1)courses[i]={...courses[i],...data};save(K.c,courses);toast('✅ Course updated!','ok')}
-  else{courses.push({id:uid(),...data});save(K.c,courses);toast('✅ Course added!','ok')}
-  updateCounts();document.getElementById('cfMsg').textContent='✅ Saved!';setTimeout(()=>{aNav(null,'coursesP')},600);
+  if(id){const i=courses.findIndex(x=>x.id===id);if(i>-1)courses[i]={...courses[i],...data};await save(K.c,courses);toast('✅ Course updated!','ok')}
+  else{courses.push({id:uid(),...data});await save(K.c,courses);toast('✅ Course added!','ok')}
+  await reloadFromFirebase();updateCounts();document.getElementById('cfMsg').textContent='✅ Saved!';setTimeout(()=>{aNav(null,'coursesP')},600);
 }
 function delCourse(id){
-  confirm2('Course Delete?','सभी Modules और Topics भी delete होंगे।',()=>{
+  confirm2('Course Delete?','सभी Modules और Topics भी delete होंगे।',async ()=>{
     reloadAll();const mIds=modules.filter(m=>m.cId===id).map(m=>m.id);
-    save(K.t,topics.filter(t=>!mIds.includes(t.mId)));
-    save(K.m,modules.filter(m=>m.cId!==id));
-    save(K.c,courses.filter(x=>x.id!==id));
-    reloadAll();updateCounts();renderCTbl();toast('🗑 Deleted','ok');
+    await save(K.t,topics.filter(t=>!mIds.includes(t.mId)));
+    await save(K.m,modules.filter(m=>m.cId!==id));
+    await save(K.c,courses.filter(x=>x.id!==id));
+    await reloadFromFirebase();updateCounts();renderCTbl();toast('🗑 Deleted','ok');
   });
 }
 
@@ -1527,14 +1559,14 @@ function saveModule(){
   if(!name||!cId){toast('❌ Name और Course ज़रूरी है!','err');return}
   const id=document.getElementById('mfId').value;
   const data={cId,name,ico:document.getElementById('mfIco').value.trim()||'🗂',desc:document.getElementById('mfDesc').value.trim(),clr:document.getElementById('mfClr').value.trim()||'#6366f1',bg:document.getElementById('mfBg').value.trim()||'#ede9fe'};
-  if(id){const i=modules.findIndex(x=>x.id===id);if(i>-1)modules[i]={...modules[i],...data};save(K.m,modules);toast('✅ Updated!','ok')}
+  if(id){const i=modules.findIndex(x=>x.id===id);if(i>-1)modules[i]={...modules[i],...data};save(K.m,modules);reloadFromFirebase();toast('✅ Updated!','ok')}
   else{modules.push({id:uid(),...data});save(K.m,modules);toast('✅ Added!','ok')}
   reloadAll();updateCounts();document.getElementById('mfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'modsP'),600);
 }
 function delModule(id){
-  confirm2('Module Delete?','सभी Topics भी delete होंगे।',()=>{
-    reloadAll();save(K.t,topics.filter(t=>t.mId!==id));save(K.m,modules.filter(x=>x.id!==id));
-    reloadAll();updateCounts();renderMTbl();toast('🗑 Deleted','ok');
+  confirm2('Module Delete?','सभी Topics भी delete होंगे।',async ()=>{
+    reloadAll();await save(K.t,topics.filter(t=>t.mId!==id));await save(K.m,modules.filter(x=>x.id!==id));
+    await reloadFromFirebase();updateCounts();renderMTbl();toast('🗑 Deleted','ok');
   });
 }
 
@@ -1564,7 +1596,7 @@ function saveTopic(){
 }
 function delTopic(id){
   confirm2('Topic Delete?','यह permanently delete होगा।',()=>{
-    reloadAll();save(K.t,topics.filter(x=>x.id!==id));reloadAll();updateCounts();renderTTbl();toast('🗑 Deleted','ok');
+    reloadAll();await save(K.t,topics.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderTTbl();toast('🗑 Deleted','ok');
   });
 }
 
@@ -1644,7 +1676,7 @@ function saveUser(){
 }
 function delUser(id){
   confirm2('User Delete?','यह user permanently delete होगा।',()=>{
-    reloadAll();save(K.users,users.filter(x=>x.id!==id));reloadAll();updateCounts();renderStuTbl();renderStaffTbl();toast('🗑 Deleted','ok');
+    reloadAll();await save(K.users,users.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderStuTbl();renderStaffTbl();toast('🗑 Deleted','ok');
   });
 }
 
@@ -2017,7 +2049,7 @@ function saveSlide(){
 }
 function delSlide(id){
   confirm2('Slide Delete?','यह slide delete होगी।',()=>{
-    reloadAll();save(K.slides,slides.filter(x=>x.id!==id));reloadAll();updateCounts();renderSlidesList();toast('🗑 Deleted','ok');
+    reloadAll();await save(K.slides,slides.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderSlidesList();toast('🗑 Deleted','ok');
   });
 }
 
@@ -2044,7 +2076,7 @@ function saveNotice(){
 }
 function delNotice(id){
   confirm2('Notice Delete?','',()=>{
-    reloadAll();save(K.notices,notices.filter(x=>x.id!==id));reloadAll();updateCounts();renderNoticesList();toast('🗑 Deleted','ok');
+    reloadAll();await save(K.notices,notices.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderNoticesList();toast('🗑 Deleted','ok');
   });
 }
 
@@ -2068,7 +2100,7 @@ function saveAnn(){
 }
 function delAnn(id){
   confirm2('Announcement Delete?','',()=>{
-    reloadAll();save(K.announcements,announcements.filter(x=>x.id!==id));reloadAll();updateCounts();renderAnnList();toast('🗑 Deleted','ok');
+    reloadAll();await save(K.announcements,announcements.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderAnnList();toast('🗑 Deleted','ok');
   });
 }
 function renderAnnList(){
@@ -2160,7 +2192,7 @@ function saveQuizCh(){
 }
 function delQuizCh(id){
   confirm2('Quiz Chapter Delete?','',()=>{
-    reloadAll();save(K.quizChs,quizChs.filter(x=>x.id!==id));reloadAll();updateCounts();renderQuizList();toast('Deleted','ok');
+    reloadAll();await save(K.quizChs,quizChs.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderQuizList();toast('Deleted','ok');
   });
 }
 
@@ -2257,7 +2289,7 @@ function saveCustomPage(){
 }
 function delCustomPage(id){
   confirm2('Custom Page Delete?','',()=>{
-    reloadAll();save(K.customPages,customPages.filter(x=>x.id!==id));reloadAll();updateCounts();renderCustomPagesList();toast('Deleted','ok');
+    reloadAll();await save(K.customPages,customPages.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderCustomPagesList();toast('Deleted','ok');
   });
 }
 
@@ -2310,7 +2342,7 @@ function savePDF(){
 }
 function delPDF(id){
   confirm2('PDF Delete?','',()=>{
-    reloadAll();save(K.pdfs,pdfs.filter(x=>x.id!==id));reloadAll();updateCounts();renderPDFTbl();toast('🗑 Deleted','ok');
+    reloadAll();await save(K.pdfs,pdfs.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderPDFTbl();toast('🗑 Deleted','ok');
   });
 }
 
@@ -2360,32 +2392,34 @@ function removeAboutPhoto(){
 }
 
 /* ════ PASSWORD CHANGE ════ */
-function changePassword(){
+async function changePassword(){
   const current=document.getElementById('pwCurrent').value;
   const newPw=document.getElementById('pwNew').value;
   const confirm=document.getElementById('pwConfirm').value;
   const msgEl=document.getElementById('pwMsg');
-  
-  // Get stored password or default
-  const storedPass=localStorage.getItem('ssc_admin_pass')||ADMIN_PASS;
-  
-  if(current!==storedPass){
-    msgEl.textContent='Current password galat hai!';msgEl.style.color='#dc2626';return;
-  }
+
   if(newPw.length<6){
     msgEl.textContent='New password kam se kam 6 characters hona chahiye!';msgEl.style.color='#dc2626';return;
   }
   if(newPw!==confirm){
     msgEl.textContent='New passwords match nahi kar rahe!';msgEl.style.color='#dc2626';return;
   }
-  
-  // Save new password
-  localStorage.setItem('ssc_admin_pass',newPw);
-  msgEl.textContent='Password successfully updated!';msgEl.style.color='#16a34a';
-  document.getElementById('pwCurrent').value='';
-  document.getElementById('pwNew').value='';
-  document.getElementById('pwConfirm').value='';
-  toast('Password updated!','ok');
+
+  try {
+    const user = auth.currentUser;
+    if(!user){msgEl.textContent='Pehle login karo!';msgEl.style.color='#dc2626';return;}
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, current);
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPw);
+    msgEl.textContent='✅ Password successfully updated!';msgEl.style.color='#16a34a';
+    document.getElementById('pwCurrent').value='';
+    document.getElementById('pwNew').value='';
+    document.getElementById('pwConfirm').value='';
+    toast('Password updated!','ok');
+  } catch(e) {
+    msgEl.textContent = e.code==='auth/wrong-password' ? '❌ Current password galat hai!' : '❌ Error: '+e.message;
+    msgEl.style.color='#dc2626';
+  }
 }
 
 /* ════ IMPORT/EXPORT ════ */
