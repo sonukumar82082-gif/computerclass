@@ -1133,12 +1133,14 @@ img{display:block;max-width:100%}
     if(!firebaseReady) { ra(); dataLoaded=true; return; }
     showLoading(true);
     try {
+      // Pehle purana localStorage clear karo - deleted data na dikhe
+      Object.values(K).forEach(k => localStorage.removeItem('ssc_'+k));
       [C,M,T,U,B,PDFs,Notices,Announcements,QSecs,QChs,Scores,Slides,CustomPages] = await Promise.all([
         ldFirebase(K.c), ldFirebase(K.m), ldFirebase(K.t), ldFirebase(K.users), ldFirebase(K.batches),
         ldFirebase(K.pdfs), ldFirebase(K.notices), ldFirebase(K.announcements), ldFirebase(K.quizSecs),
         ldFirebase(K.quizChs), ldFirebase(K.scores), ldFirebase(K.slides), ldFirebase(K.customPages)
       ]);
-      // Save to localStorage for offline support
+      // Fresh Firebase data localStorage mein save karo
       svLocal(K.c,C);svLocal(K.m,M);svLocal(K.t,T);svLocal(K.users,U);svLocal(K.batches,B);
       svLocal(K.pdfs,PDFs);svLocal(K.notices,Notices);svLocal(K.announcements,Announcements);
       svLocal(K.quizSecs,QSecs);svLocal(K.quizChs,QChs);svLocal(K.scores,Scores);svLocal(K.slides,Slides);svLocal(K.customPages,CustomPages);

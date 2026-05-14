@@ -991,12 +991,14 @@ Example:
     if(!firebaseReady) { reloadAll(); return; }
     showAdminLoading(true);
     try {
+      // Pehle purana localStorage clear karo
+      Object.values(K).forEach(k => localStorage.removeItem('ssc_'+k));
       [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages] = await Promise.all([
         loadFirebase(K.c), loadFirebase(K.m), loadFirebase(K.t), loadFirebase(K.users), loadFirebase(K.batches),
         loadFirebase(K.slides), loadFirebase(K.pdfs), loadFirebase(K.notices), loadFirebase(K.announcements),
         loadFirebase(K.quizSecs), loadFirebase(K.quizChs), loadFirebase(K.customPages)
       ]);
-      // Backup to localStorage
+      // Fresh data save karo localStorage mein
       saveLocal(K.c,courses);saveLocal(K.m,modules);saveLocal(K.t,topics);saveLocal(K.users,users);
       saveLocal(K.batches,batches);saveLocal(K.slides,slides);saveLocal(K.pdfs,pdfs);saveLocal(K.notices,notices);
       saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);saveLocal(K.customPages,customPages);
