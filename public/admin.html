@@ -239,7 +239,7 @@ input,select,textarea{font-family:var(--font);outline:none}
   </head>
 <body>
   <!-- LOADING SCREEN -->
-  <div id="adminLoader"><div class="spinner"></div><div class="text">Loading Admin...</div></div>
+  <div id="adminLoader" style="display:none"><div class="spinner"></div><div class="text">Loading Admin...</div></div>
   
   <!-- ═══ LOGIN ═══ -->
 <div id="vLogin" class="view on">
@@ -1114,17 +1114,26 @@ function showAdminPanel(){
 // Firebase Auth state listener — page reload pe bhi login maintain rahega
 if(auth){
   auth.onAuthStateChanged(user => {
+    // Loader hide karo — chahe logged in ho ya nahi
+    const loader = document.getElementById('adminLoader');
+    if(loader) loader.style.display = 'none';
+
     if(user){
       // Logged in — admin panel dikhao
       document.getElementById('vLogin').classList.remove('on');
       document.getElementById('vAdmin').classList.add('on');
       renderAdmin();
     } else {
-      // Logged out — login page dikhao
+      // Logged out — login page turant dikhao
       document.getElementById('vLogin').classList.add('on');
       document.getElementById('vAdmin').classList.remove('on');
     }
   });
+} else {
+  // Firebase Auth available nahi — seedha loader hide karo, login dikhao
+  const loader = document.getElementById('adminLoader');
+  if(loader) loader.style.display = 'none';
+  document.getElementById('vLogin').classList.add('on');
 }
 
 async function doLogout(){
@@ -1160,46 +1169,28 @@ function doRecovery(){
   }
 }
 
-function doResetPassword(){
+async function doResetPassword(){
   const email=document.getElementById('newAdminEmail').value.trim();
   const pass=document.getElementById('newAdminPass').value;
   const pass2=document.getElementById('newAdminPass2').value;
   const err=document.getElementById('resetErr');
-  
-  if(!email || !pass){
-    err.textContent='Email aur Password zaroori hai!';
+
+  if(!email || !pass){err.textContent='Email aur Password zaroori hai!';err.style.display='block';return;}
+  if(pass.length<6){err.textContent='Password kam se kam 6 characters ka hona chahiye!';err.style.display='block';return;}
+  if(pass!==pass2){err.textContent='Dono password match nahi kar rahe!';err.style.display='block';return;}
+
+  try {
+    // Firebase Auth se password reset karo
+    await auth.sendPasswordResetEmail(email);
+    err.style.display='none';
+    alert('Password reset email bheja gaya: '+email+'\nEmail check karo aur naya password set karo.');
+    hideRecovery();
+    document.getElementById('lEmail').value=email;
+    document.getElementById('lPass').value='';
+  } catch(e) {
+    err.textContent='❌ Error: '+e.message;
     err.style.display='block';
-    return;
   }
-  if(pass.length<6){
-    err.textContent='Password kam se kam 6 characters ka hona chahiye!';
-    err.style.display='block';
-    return;
-  }
-  if(pass!==pass2){
-    err.textContent='Dono password match nahi kar rahe!';
-    err.style.display='block';
-    return;
-  }
-  
-  // Save new credentials
-  localStorage.setItem('ssc_admin_email', email);
-  localStorage.setItem('ssc_admin_pass', pass);
-  
-  // Also save to Firebase if available
-  if(firebaseReady){
-    db.collection('adminSettings').doc('credentials').set({
-      email: email,
-      pass: pass,
-      updatedAt: new Date().toISOString()
-    });
-  }
-  
-  err.style.display='none';
-  alert('Password successfully reset ho gaya! Ab naye credentials se login karein.');
-  hideRecovery();
-  document.getElementById('lEmail').value=email;
-  document.getElementById('lPass').value='';
 }
 
 
@@ -1552,16 +1543,16 @@ function prepMF(m=null){
   document.getElementById('mfMsg').textContent='';
 }
 function editModule(id){prepMF(modules.find(x=>x.id===id));aNav(null,'addModP')}
-function saveModule(){
+async function saveModule(){
   reloadAll();
   const name=document.getElementById('mfName').value.trim();
   const cId=document.getElementById('mfCourse').value;
   if(!name||!cId){toast('❌ Name और Course ज़रूरी है!','err');return}
   const id=document.getElementById('mfId').value;
   const data={cId,name,ico:document.getElementById('mfIco').value.trim()||'🗂',desc:document.getElementById('mfDesc').value.trim(),clr:document.getElementById('mfClr').value.trim()||'#6366f1',bg:document.getElementById('mfBg').value.trim()||'#ede9fe'};
-  if(id){const i=modules.findIndex(x=>x.id===id);if(i>-1)modules[i]={...modules[i],...data};save(K.m,modules);reloadFromFirebase();toast('✅ Updated!','ok')}
-  else{modules.push({id:uid(),...data});save(K.m,modules);toast('✅ Added!','ok')}
-  reloadAll();updateCounts();document.getElementById('mfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'modsP'),600);
+  if(id){const i=modules.findIndex(x=>x.id===id);if(i>-1)modules[i]={...modules[i],...data};await save(K.m,modules);toast('✅ Updated!','ok')}
+  else{modules.push({id:uid(),...data});await save(K.m,modules);toast('✅ Added!','ok')}
+  updateCounts();document.getElementById('mfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'modsP'),600);
 }
 function delModule(id){
   confirm2('Module Delete?','सभी Topics भी delete होंगे।',async ()=>{
@@ -1583,19 +1574,19 @@ function prepTF(t=null){
   document.getElementById('tfMsg').textContent='';
 }
 function editTopic(id){prepTF(topics.find(x=>x.id===id));aNav(null,'addTopicP')}
-function saveTopic(){
+async function saveTopic(){
   reloadAll();
   const name=document.getElementById('tfName').value.trim();
   const mId=document.getElementById('tfMod').value;
   if(!name||!mId){toast('❌ Name और Module ज़रूरी है!','err');return}
   const id=document.getElementById('tfId').value;
   const data={mId,name,emoji:document.getElementById('tfEmoji').value.trim()||'📖',notes:document.getElementById('tfNotes').value.trim(),pptLink:document.getElementById('tfPPT').value.trim()};
-  if(id){const i=topics.findIndex(x=>x.id===id);if(i>-1)topics[i]={...topics[i],...data};save(K.t,topics);toast('✅ Updated!','ok')}
-  else{topics.unshift({id:uid(),...data});save(K.t,topics);toast('✅ Added!','ok')}
-  reloadAll();updateCounts();document.getElementById('tfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'topicsP'),600);
+  if(id){const i=topics.findIndex(x=>x.id===id);if(i>-1)topics[i]={...topics[i],...data};await save(K.t,topics);toast('✅ Updated!','ok')}
+  else{topics.unshift({id:uid(),...data});await save(K.t,topics);toast('✅ Added!','ok')}
+  updateCounts();document.getElementById('tfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'topicsP'),600);
 }
 function delTopic(id){
-  confirm2('Topic Delete?','यह permanently delete होगा।',()=>{
+  confirm2('Topic Delete?','यह permanently delete होगा।',async()=>{
     reloadAll();await save(K.t,topics.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderTTbl();toast('🗑 Deleted','ok');
   });
 }
@@ -1656,7 +1647,7 @@ function prepUF(role='student',u=null){
   loadStaffPhotoPreview(u?.photo||null);
 }
 function editUser(id){prepUF(undefined,users.find(x=>x.id===id));aNav(null,'addUserP')}
-function saveUser(){
+async function saveUser(){
   reloadAll();
   const name=document.getElementById('ufName').value.trim();
   const email=document.getElementById('ufEmail').value.trim();
@@ -1666,16 +1657,16 @@ function saveUser(){
   const id=document.getElementById('ufId').value;
   const role=document.getElementById('ufRole').value;
   const data={name,email,pass,role,batchId:role==='student'?document.getElementById('ufBatch').value||null:null,photo:role==='staff'?staffPhotoData:null};
-  if(id){const i=users.findIndex(x=>x.id===id);if(i>-1)users[i]={...users[i],...data};save(K.users,users);toast('Updated!','ok')}
+  if(id){const i=users.findIndex(x=>x.id===id);if(i>-1)users[i]={...users[i],...data};await save(K.users,users);toast('Updated!','ok')}
   else{
     if(users.find(x=>x.email.toLowerCase()===email.toLowerCase())){toast('Yeh email pehle se exist karti hai!','err');return}
-    users.push({id:uid(),...data});save(K.users,users);toast('User added!','ok');
+    users.push({id:uid(),...data});await save(K.users,users);toast('User added!','ok');
   }
-  reloadAll();updateCounts();document.getElementById('ufMsg').textContent='Saved!';
+  updateCounts();document.getElementById('ufMsg').textContent='Saved!';
   setTimeout(()=>aNav(null,data.role==='student'?'studentsP':'staffP'),600);
 }
 function delUser(id){
-  confirm2('User Delete?','यह user permanently delete होगा।',()=>{
+  confirm2('User Delete?','यह user permanently delete होगा।',async()=>{
     reloadAll();await save(K.users,users.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderStuTbl();renderStaffTbl();toast('🗑 Deleted','ok');
   });
 }
@@ -1721,26 +1712,26 @@ function editBatchUnlock(bId){
   // store bId for saving
   document.getElementById('unlockSection').dataset.batchId=bId;
 }
-function saveUnlock(){
+async function saveUnlock(){
   reloadAll();
   const bId=document.getElementById('unlockSection').dataset.batchId;
   const checkboxes=document.querySelectorAll('#unlockTopicList input[type=checkbox]');
   const unlocked=[...checkboxes].filter(c=>c.checked).map(c=>c.dataset.tid);
   const i=batches.findIndex(x=>x.id===bId);
-  if(i>-1){batches[i].unlockedTopics=unlocked;save(K.batches,batches)}
+  if(i>-1){batches[i].unlockedTopics=unlocked;await save(K.batches,batches)}
   toast('✅ Topics unlock updated!','ok');
   document.getElementById('ulMsg').textContent=`✅ ${unlocked.length} topics unlocked!`;
 }
-function saveBatch(){
+async function saveBatch(){
   reloadAll();
   const name=document.getElementById('bfName').value.trim();
   const courseId=document.getElementById('bfCourse').value;
   if(!name||!courseId){toast('Name aur Course zaruri hai!','err');return}
   const id=document.getElementById('bfId').value;
   const data={name,desc:document.getElementById('bfDesc').value.trim(),courseId};
-  if(id){const i=batches.findIndex(x=>x.id===id);if(i>-1)batches[i]={...batches[i],...data};save(K.batches,batches);toast('Updated!','ok')}
-  else{batches.push({id:uid(),...data,unlockedTopics:[]});save(K.batches,batches);toast('Batch added!','ok')}
-  reloadAll();updateCounts();document.getElementById('bfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'batchesP'),600);
+  if(id){const i=batches.findIndex(x=>x.id===id);if(i>-1)batches[i]={...batches[i],...data};await save(K.batches,batches);toast('Updated!','ok')}
+  else{batches.push({id:uid(),...data,unlockedTopics:[]});await save(K.batches,batches);toast('Batch added!','ok')}
+  updateCounts();document.getElementById('bfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'batchesP'),600);
 }
 
 /* ════ STUDENT CSV IMPORT ════ */
@@ -1812,7 +1803,7 @@ function cancelStudentExcel(){
   document.getElementById('studentExcelPreview').style.display='none';
 }
 
-function importStudentExcel(){
+async function importStudentExcel(){
   if(!studentExcelData||!studentExcelData.length){
     toast('Koi data nahi hai import ke liye!','err');
     return;
@@ -1857,8 +1848,8 @@ function importStudentExcel(){
     imported++;
   });
   
-  save(K.users,users);
-  reloadAll();
+  await save(K.users,users);
+  await reloadFromFirebase();
   updateCounts();
   
   // Hide preview
@@ -1999,8 +1990,8 @@ function importExcelStudents(){
     imported++;
   });
   
-  save(K.users,users);
-  reloadAll();
+  await save(K.users,users);
+  await reloadFromFirebase();
   updateCounts();
   
   // Hide preview
@@ -2013,11 +2004,11 @@ function importExcelStudents(){
   renderStuTbl();
 }
 function delBatch(id){
-  confirm2('Batch Delete?','Students का batch assignment हट जाएगा।',()=>{
+  confirm2('Batch Delete?','Students का batch assignment हट जाएगा।',async()=>{
     reloadAll();
     users.forEach(u=>{if(u.batchId===id)u.batchId=null});
-    save(K.users,users);save(K.batches,batches.filter(x=>x.id!==id));
-    reloadAll();updateCounts();renderBatTbl();toast('🗑 Deleted','ok');
+    await save(K.users,users);await save(K.batches,batches.filter(x=>x.id!==id));
+    await reloadFromFirebase();updateCounts();renderBatTbl();toast('🗑 Deleted','ok');
   });
 }
 
@@ -2037,18 +2028,18 @@ function prepSF(s=null){
   else{document.getElementById('sThumbPrev').style.display='none';document.getElementById('sThumbPh').style.display='block'}
 }
 function editSlide(id){prepSF(slides.find(x=>x.id===id));aNav(null,'addSlideP')}
-function saveSlide(){
+async function saveSlide(){
   reloadAll();
   const title=document.getElementById('sfTitle2').value.trim();
   if(!title){toast('❌ Title ज़रूरी है!','err');return}
   const id=document.getElementById('sfId').value;
   const data={title,badge:document.getElementById('sfBadge').value.trim(),subtitle:document.getElementById('sfSub').value.trim(),btnPrimary:document.getElementById('sfBtn1').value.trim(),btnSec:document.getElementById('sfBtn2').value.trim(),order:parseInt(document.getElementById('sfOrder').value)||1,bg:sThumbB64};
-  if(id){const i=slides.findIndex(x=>x.id===id);if(i>-1)slides[i]={...slides[i],...data};save(K.slides,slides);toast('✅ Updated!','ok')}
-  else{if(slides.length>=10){toast('❌ Maximum 10 banners!','err');return}slides.push({id:uid(),...data});save(K.slides,slides);toast('✅ Banner added!','ok')}
-  reloadAll();updateCounts();document.getElementById('sfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'slidesP'),600);
+  if(id){const i=slides.findIndex(x=>x.id===id);if(i>-1)slides[i]={...slides[i],...data};await save(K.slides,slides);toast('✅ Updated!','ok')}
+  else{if(slides.length>=10){toast('❌ Maximum 10 banners!','err');return}slides.push({id:uid(),...data});await save(K.slides,slides);toast('✅ Banner added!','ok')}
+  updateCounts();document.getElementById('sfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'slidesP'),600);
 }
 function delSlide(id){
-  confirm2('Slide Delete?','यह slide delete होगी।',()=>{
+  confirm2('Slide Delete?','यह slide delete होगी।',async()=>{
     reloadAll();await save(K.slides,slides.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderSlidesList();toast('🗑 Deleted','ok');
   });
 }
@@ -2064,18 +2055,18 @@ function prepNF(n=null){
   document.getElementById('nfMsg').textContent='';
 }
 function editNotice(id){prepNF(notices.find(x=>x.id===id));aNav(null,'addNoticeP')}
-function saveNotice(){
+async function saveNotice(){
   reloadAll();
   const title=document.getElementById('nfTitle2').value.trim();
   if(!title){toast('❌ Title ज़रूरी है!','err');return}
   const id=document.getElementById('nfId').value;
   const data={title,desc:document.getElementById('nfDesc').value.trim(),date:document.getElementById('nfDate').value.trim(),important:document.getElementById('nfImp').value==='true'};
-  if(id){const i=notices.findIndex(x=>x.id===id);if(i>-1)notices[i]={...notices[i],...data};save(K.notices,notices);toast('✅ Updated!','ok')}
-  else{notices.unshift({id:uid(),...data});save(K.notices,notices);toast('✅ Notice added!','ok')}
-  reloadAll();updateCounts();document.getElementById('nfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'noticesP'),600);
+  if(id){const i=notices.findIndex(x=>x.id===id);if(i>-1)notices[i]={...notices[i],...data};await save(K.notices,notices);toast('✅ Updated!','ok')}
+  else{notices.unshift({id:uid(),...data});await save(K.notices,notices);toast('✅ Notice added!','ok')}
+  updateCounts();document.getElementById('nfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'noticesP'),600);
 }
 function delNotice(id){
-  confirm2('Notice Delete?','',()=>{
+  confirm2('Notice Delete?','',async()=>{
     reloadAll();await save(K.notices,notices.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderNoticesList();toast('🗑 Deleted','ok');
   });
 }
@@ -2088,18 +2079,18 @@ function prepAF(a=null){
   document.getElementById('afMsg').textContent='';
 }
 function editAnn(id){prepAF(announcements.find(x=>x.id===id));aNav(null,'addAnnP')}
-function saveAnn(){
+async function saveAnn(){
   reloadAll();
   const text=document.getElementById('afText').value.trim();
   if(!text){toast('❌ Text ज़रूरी है!','err');return}
   const id=document.getElementById('afId').value;
   const data={text};
-  if(id){const i=announcements.findIndex(x=>x.id===id);if(i>-1)announcements[i]={...announcements[i],...data};save(K.announcements,announcements);toast('✅ Updated!','ok')}
-  else{announcements.push({id:uid(),...data});save(K.announcements,announcements);toast('✅ Announcement added!','ok')}
-  reloadAll();updateCounts();document.getElementById('afMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'annP'),600);
+  if(id){const i=announcements.findIndex(x=>x.id===id);if(i>-1)announcements[i]={...announcements[i],...data};await save(K.announcements,announcements);toast('✅ Updated!','ok')}
+  else{announcements.push({id:uid(),...data});await save(K.announcements,announcements);toast('✅ Announcement added!','ok')}
+  updateCounts();document.getElementById('afMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'annP'),600);
 }
 function delAnn(id){
-  confirm2('Announcement Delete?','',()=>{
+  confirm2('Announcement Delete?','',async()=>{
     reloadAll();await save(K.announcements,announcements.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderAnnList();toast('🗑 Deleted','ok');
   });
 }
@@ -2139,24 +2130,23 @@ function prepQSF(qs=null){
   if(qs)sel.value=qs.cId;
 }
 function editQuizSec(id){prepQSF(quizSecs.find(x=>x.id===id));aNav(null,'addQuizSecP')}
-function saveQuizSec(){
+async function saveQuizSec(){
   reloadAll();
   const name=document.getElementById('qsfName').value.trim();
   const cId=document.getElementById('qsfCourse').value;
   if(!name||!cId){toast('Course aur Name zaruri hai!','err');return}
   const id=document.getElementById('qsfId').value;
   const data={name,cId,order:parseInt(document.getElementById('qsfOrder').value)||1};
-  if(id){const i=quizSecs.findIndex(x=>x.id===id);if(i>-1)quizSecs[i]={...quizSecs[i],...data};save(K.quizSecs,quizSecs);toast('Updated!','ok')}
-  else{quizSecs.push({id:uid(),...data});save(K.quizSecs,quizSecs);toast('Quiz Section added!','ok')}
-  reloadAll();updateCounts();document.getElementById('qsfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
+  if(id){const i=quizSecs.findIndex(x=>x.id===id);if(i>-1)quizSecs[i]={...quizSecs[i],...data};await save(K.quizSecs,quizSecs);toast('Updated!','ok')}
+  else{quizSecs.push({id:uid(),...data});await save(K.quizSecs,quizSecs);toast('Quiz Section added!','ok')}
+  updateCounts();document.getElementById('qsfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
 }
 function delQuizSec(id){
-  confirm2('Quiz Section Delete?','Iske saare chapters bhi delete honge',()=>{
+  confirm2('Quiz Section Delete?','Iske saare chapters bhi delete honge',async()=>{
     reloadAll();
-    // Delete all chapters of this section
-    save(K.quizChs,quizChs.filter(x=>x.secId!==id));
-    save(K.quizSecs,quizSecs.filter(x=>x.id!==id));
-    reloadAll();updateCounts();renderQuizList();toast('Deleted','ok');
+    await save(K.quizChs,quizChs.filter(x=>x.secId!==id));
+    await save(K.quizSecs,quizSecs.filter(x=>x.id!==id));
+    await reloadFromFirebase();updateCounts();renderQuizList();toast('Deleted','ok');
   });
 }
 
@@ -2178,7 +2168,7 @@ function prepQCF(qc=null){
   if(qc)sel.value=qc.secId;
 }
 function editQuizCh(id){prepQCF(quizChs.find(x=>x.id===id));aNav(null,'addQuizChP')}
-function saveQuizCh(){
+async function saveQuizCh(){
   reloadAll();
   const name=document.getElementById('qcfName').value.trim();
   const secId=document.getElementById('qcfSec').value;
@@ -2186,12 +2176,12 @@ function saveQuizCh(){
   if(!name||!secId||!code){toast('Section, Name aur Code zaruri hai!','err');return}
   const id=document.getElementById('qcfId').value;
   const data={name,secId,order:parseInt(document.getElementById('qcfOrder').value)||1,htmlCode:code};
-  if(id){const i=quizChs.findIndex(x=>x.id===id);if(i>-1)quizChs[i]={...quizChs[i],...data};save(K.quizChs,quizChs);toast('Updated!','ok')}
-  else{quizChs.push({id:uid(),...data});save(K.quizChs,quizChs);toast('Quiz Chapter added!','ok')}
-  reloadAll();updateCounts();document.getElementById('qcfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
+  if(id){const i=quizChs.findIndex(x=>x.id===id);if(i>-1)quizChs[i]={...quizChs[i],...data};await save(K.quizChs,quizChs);toast('Updated!','ok')}
+  else{quizChs.push({id:uid(),...data});await save(K.quizChs,quizChs);toast('Quiz Chapter added!','ok')}
+  updateCounts();document.getElementById('qcfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
 }
 function delQuizCh(id){
-  confirm2('Quiz Chapter Delete?','',()=>{
+  confirm2('Quiz Chapter Delete?','',async()=>{
     reloadAll();await save(K.quizChs,quizChs.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderQuizList();toast('Deleted','ok');
   });
 }
@@ -2270,25 +2260,24 @@ function setCPFType(type){
   }
 }
 function editCustomPage(id){prepCPF(customPages.find(x=>x.id===id));aNav(null,'addCustomPageP')}
-function saveCustomPage(){
+async function saveCustomPage(){
   reloadAll();
   const title=document.getElementById('cpfTitle2').value.trim();
   const category=document.getElementById('cpfCategory').value;
   if(!title||!category){toast('Category aur Title zaruri hai!','err');return}
   const id=document.getElementById('cpfId').value;
-  // Determine type: link or code
   const isLinkType=document.getElementById('cpfLinkField').style.display!=='none';
   const code=document.getElementById('cpfCode').value.trim();
   const link=document.getElementById('cpfLink').value.trim();
   if(isLinkType&&!link){toast('URL paste karein!','err');return}
   if(!isLinkType&&!code){toast('HTML Code paste karein!','err');return}
   const data={title,category,desc:document.getElementById('cpfDesc').value.trim(),order:parseInt(document.getElementById('cpfOrder').value)||1,htmlCode:isLinkType?'':code,pageLink:isLinkType?link:''};
-  if(id){const i=customPages.findIndex(x=>x.id===id);if(i>-1)customPages[i]={...customPages[i],...data};save(K.customPages,customPages);toast('Updated!','ok')}
-  else{customPages.push({id:uid(),...data});save(K.customPages,customPages);toast('Custom Page added!','ok')}
-  reloadAll();updateCounts();document.getElementById('cpfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'customPagesP'),600);
+  if(id){const i=customPages.findIndex(x=>x.id===id);if(i>-1)customPages[i]={...customPages[i],...data};await save(K.customPages,customPages);toast('Updated!','ok')}
+  else{customPages.push({id:uid(),...data});await save(K.customPages,customPages);toast('Custom Page added!','ok')}
+  updateCounts();document.getElementById('cpfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'customPagesP'),600);
 }
 function delCustomPage(id){
-  confirm2('Custom Page Delete?','',()=>{
+  confirm2('Custom Page Delete?','',async()=>{
     reloadAll();await save(K.customPages,customPages.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderCustomPagesList();toast('Deleted','ok');
   });
 }
@@ -2329,19 +2318,19 @@ function prepPF(p=null){
   pdfB64='';
 }
 function editPDF(id){prepPF(pdfs.find(x=>x.id===id));aNav(null,'addPDFP')}
-function savePDF(){
+async function savePDF(){
   reloadAll();
   const name=document.getElementById('pfName').value.trim();
   if(!name){toast('❌ Name ज़रूरी है!','err');return}
   const url=document.getElementById('pfUrl').value.trim();
   const id=document.getElementById('pfId').value;
   const data={name,category:document.getElementById('pfCat').value.trim()||'General',size:document.getElementById('pfSize').value.trim(),url:url,data:pdfB64||undefined};
-  if(id){const i=pdfs.findIndex(x=>x.id===id);if(i>-1)pdfs[i]={...pdfs[i],...data};save(K.pdfs,pdfs);toast('✅ Updated!','ok')}
-  else{pdfs.push({id:uid(),...data});save(K.pdfs,pdfs);toast('✅ PDF added!','ok')}
-  reloadAll();updateCounts();document.getElementById('pfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'pdfP'),600);
+  if(id){const i=pdfs.findIndex(x=>x.id===id);if(i>-1)pdfs[i]={...pdfs[i],...data};await save(K.pdfs,pdfs);toast('✅ Updated!','ok')}
+  else{pdfs.push({id:uid(),...data});await save(K.pdfs,pdfs);toast('✅ PDF added!','ok')}
+  updateCounts();document.getElementById('pfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'pdfP'),600);
 }
 function delPDF(id){
-  confirm2('PDF Delete?','',()=>{
+  confirm2('PDF Delete?','',async()=>{
     reloadAll();await save(K.pdfs,pdfs.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderPDFTbl();toast('🗑 Deleted','ok');
   });
 }
@@ -2504,7 +2493,7 @@ function previewImport(input){
   reader.readAsText(file);
 }
 
-function doImport(){
+async function doImport(){
   if(!importData){toast('No file selected!','err');return}
   
   reloadAll();
@@ -2514,39 +2503,39 @@ function doImport(){
     // Merge data (avoid duplicates by ID)
     if(d.courses){
       d.courses.forEach(c=>{if(!courses.find(x=>x.id===c.id))courses.push(c)});
-      save(K.c,courses);
+      await save(K.c,courses);
     }
     if(d.modules){
       d.modules.forEach(m=>{if(!modules.find(x=>x.id===m.id))modules.push(m)});
-      save(K.m,modules);
+      await save(K.m,modules);
     }
     if(d.topics){
       d.topics.forEach(t=>{if(!topics.find(x=>x.id===t.id))topics.push(t)});
-      save(K.t,topics);
+      await save(K.t,topics);
     }
     if(d.users){
       d.users.forEach(u=>{if(!users.find(x=>x.id===u.id||x.email===u.email))users.push(u)});
-      save(K.users,users);
+      await save(K.users,users);
     }
     if(d.batches){
       d.batches.forEach(b=>{if(!batches.find(x=>x.id===b.id))batches.push(b)});
-      save(K.batches,batches);
+      await save(K.batches,batches);
     }
     if(d.pdfs){
       d.pdfs.forEach(p=>{if(!pdfs.find(x=>x.id===p.id))pdfs.push(p)});
-      save(K.pdfs,pdfs);
+      await save(K.pdfs,pdfs);
     }
     if(d.slides){
       d.slides.forEach(s=>{if(!slides.find(x=>x.id===s.id))slides.push(s)});
-      save(K.slides,slides);
+      await save(K.slides,slides);
     }
     if(d.notices){
       d.notices.forEach(n=>{if(!notices.find(x=>x.id===n.id))notices.push(n)});
-      save(K.notices,notices);
+      await save(K.notices,notices);
     }
     if(d.announcements){
       d.announcements.forEach(a=>{if(!announcements.find(x=>x.id===a.id))announcements.push(a)});
-      save(K.announcements,announcements);
+      await save(K.announcements,announcements);
     }
     toast('JSON data imported!','ok');
   }else if(importData.type==='csv'){
@@ -2579,11 +2568,11 @@ function doImport(){
         imported++;
       }
     });
-    save(K.users,users);
+    await save(K.users,users);
     toast(`${imported} students imported!`,'ok');
   }
   
-  reloadAll();
+  await reloadFromFirebase();
   updateCounts();
   document.getElementById('importFile').value='';
   document.getElementById('importPreview').style.display='none';
