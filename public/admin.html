@@ -905,6 +905,8 @@ Example:
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
+    // Force long polling - WebChannel 404 fix for all networks
+    db.settings({ experimentalForceLongPolling: true });
     db.enablePersistence({synchronizeTabs: true}).catch(e => {});
     firebaseReady = true;
   } catch(e) {
@@ -943,16 +945,29 @@ Example:
     saveLocal(collection, dataArray); // Always backup to localStorage
     if(!firebaseReady) return;
     try {
-      const batch = db.batch();
+      // Firebase batch limit = 500 ops. Chunk karo safety ke liye
       const existing = await db.collection(collection).get();
-      existing.forEach(doc => batch.delete(doc.ref));
-      dataArray.forEach(item => {
-        const docRef = db.collection(collection).doc(item.id || item._docId || db.collection(collection).doc().id);
-        const cleanItem = {...item};
-        delete cleanItem._docId;
-        batch.set(docRef, cleanItem);
-      });
-      await batch.commit();
+      const existingDocs = [];
+      existing.forEach(doc => existingDocs.push(doc.ref));
+
+      // Delete in chunks of 200
+      for(let i = 0; i < existingDocs.length; i += 200){
+        const delBatch = db.batch();
+        existingDocs.slice(i, i+200).forEach(ref => delBatch.delete(ref));
+        await delBatch.commit();
+      }
+
+      // Add new in chunks of 200
+      for(let i = 0; i < dataArray.length; i += 200){
+        const addBatch = db.batch();
+        dataArray.slice(i, i+200).forEach(item => {
+          const docRef = db.collection(collection).doc(item.id || item._docId || db.collection(collection).doc().id);
+          const cleanItem = {...item};
+          delete cleanItem._docId;
+          addBatch.set(docRef, cleanItem);
+        });
+        await addBatch.commit();
+      }
       console.log("[v0] Saved to Firebase:", collection);
     } catch(e) {
       console.log("[v0] Firebase save error:", e);

@@ -1050,7 +1050,7 @@ img{display:block;max-width:100%}
     db = firebase.firestore();
     // Enable offline persistence for better data availability
     // Force long polling - WebChannel 404 fix for all networks
-    db.settings({ experimentalForceLongPolling: true, merge: true });
+    db.settings({ experimentalForceLongPolling: true });
     db.enablePersistence({synchronizeTabs: true}).catch(e => console.log("Persistence error:", e));
     firebaseReady = true;
   } catch(e) {
@@ -1083,17 +1083,30 @@ img{display:block;max-width:100%}
     svLocal(collection, dataArray); // Always save to localStorage as backup
     if(!firebaseReady) return;
     try {
-      const batch = db.batch();
-      // Clear existing and add new
+      // Firebase batch limit = 500 ops. Delete + Set = 2 ops per item
+      // Chunk karo agar data zyada ho
       const existing = await db.collection(collection).get();
-      existing.forEach(doc => batch.delete(doc.ref));
-      dataArray.forEach(item => {
-        const docRef = db.collection(collection).doc(item.id || item._docId || db.collection(collection).doc().id);
-        const cleanItem = {...item};
-        delete cleanItem._docId;
-        batch.set(docRef, cleanItem);
-      });
-      await batch.commit();
+      const existingDocs = [];
+      existing.forEach(doc => existingDocs.push(doc.ref));
+
+      // Delete in chunks of 200
+      for(let i = 0; i < existingDocs.length; i += 200){
+        const delBatch = db.batch();
+        existingDocs.slice(i, i+200).forEach(ref => delBatch.delete(ref));
+        await delBatch.commit();
+      }
+
+      // Add new in chunks of 200
+      for(let i = 0; i < dataArray.length; i += 200){
+        const addBatch = db.batch();
+        dataArray.slice(i, i+200).forEach(item => {
+          const docRef = db.collection(collection).doc(item.id || item._docId || db.collection(collection).doc().id);
+          const cleanItem = {...item};
+          delete cleanItem._docId;
+          addBatch.set(docRef, cleanItem);
+        });
+        await addBatch.commit();
+      }
     } catch(e) {
       console.log("[v0] Firebase save error:", e);
     }
@@ -1138,8 +1151,17 @@ img{display:block;max-width:100%}
     showLoading(false);
   }
 
-/* SEED */
-function seed(){
+/* SEED — Only runs if Firebase bhi empty ho (brand new setup) */
+async function seed(){
+  // Firebase se check karo — agar wahan data hai to seed mat karo
+  if(firebaseReady){
+    try{
+      const snap = await db.collection(K.c).limit(1).get();
+      if(!snap.empty) { ra(); return; } // Firebase mein data hai, seed skip
+    }catch(e){}
+  } else {
+    if(ldLocal(K.c).length){ ra(); return; } // localStorage mein data hai, seed skip
+  }
   if(!ld(K.c).length){
     sv(K.c,[{id:'c1',name:'Bihar IT Certificate',ico:'🖥️',desc:'Bihar State Certificate in IT — KYP Program',clr:'#2563eb',bg:'#eff6ff',thumb:''}]);
     sv(K.m,[
@@ -1189,7 +1211,6 @@ function seed(){
   }
   ra();
 }
-seed();
 
 /* ════ VIEWS ════ */
 let currentUser=null,fromView='vStudent';
@@ -1948,10 +1969,10 @@ function parseNotes(raw){
 function toast(msg,type='ok'){const el=document.getElementById('tst');el.textContent=msg;el.className=`toast show t-${type}`;setTimeout(()=>el.classList.remove('show'),2800)}
 
 /* START */
-// Always load from Firebase first (shows loading screen)
 async function initApp(){
   showLoading(true);
   await raFirebase();
+  await seed(); // Firebase check ke baad seed karo
   renderHome();
   renderNavTabs();
   loadAboutPhoto();
