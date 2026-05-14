@@ -1081,26 +1081,21 @@ async function doLogin(){
   const p=document.getElementById('lPass').value;
   const err=document.getElementById('lErr');
   const btn=document.querySelector('.login-btn');
-  
+
   if(!e||!p){err.textContent='❌ Email aur Password dono bharo!';err.classList.add('show');return;}
-  
+
   btn.textContent='Logging in...';btn.disabled=true;
   err.classList.remove('show');
 
   try {
-    // Firebase Auth se login
     await auth.signInWithEmailAndPassword(e, p);
-    // auth.onAuthStateChanged handle karega baaki kaam
+    // onAuthStateChanged automatically admin panel dikhayega
+    btn.textContent='Admin Login';btn.disabled=false;
   } catch(firebaseErr) {
-    // Firebase Auth fail → fallback: master key check
-    if(e===MASTER_EMAIL.toLowerCase() && p===MASTER_RECOVERY_KEY){
-      showAdminPanel();
-      toast('Master Admin Login!','ok');
-    } else {
-      err.textContent='❌ Email ya Password galat hai!';
-      err.classList.add('show');
-      document.getElementById('lPass').value='';
-    }
+    console.log('Firebase Auth error:', firebaseErr.code);
+    err.textContent='❌ Email ya Password galat hai!';
+    err.classList.add('show');
+    document.getElementById('lPass').value='';
     btn.textContent='Admin Login';btn.disabled=false;
   }
 }
@@ -1111,32 +1106,31 @@ function showAdminPanel(){
   renderAdmin();
 }
 
-// Firebase Auth state listener — page reload pe bhi login maintain rahega
+// Firebase Auth state listener
+let adminRendered = false;
 if(auth){
   auth.onAuthStateChanged(user => {
-    // Loader hide karo — chahe logged in ho ya nahi
     const loader = document.getElementById('adminLoader');
     if(loader) loader.style.display = 'none';
 
     if(user){
-      // Logged in — admin panel dikhao
       document.getElementById('vLogin').classList.remove('on');
       document.getElementById('vAdmin').classList.add('on');
-      renderAdmin();
+      if(!adminRendered){ adminRendered=true; renderAdmin(); }
     } else {
-      // Logged out — login page turant dikhao
+      adminRendered = false;
       document.getElementById('vLogin').classList.add('on');
       document.getElementById('vAdmin').classList.remove('on');
     }
   });
 } else {
-  // Firebase Auth available nahi — seedha loader hide karo, login dikhao
   const loader = document.getElementById('adminLoader');
   if(loader) loader.style.display = 'none';
   document.getElementById('vLogin').classList.add('on');
 }
 
 async function doLogout(){
+  adminRendered = false;
   try{ await auth.signOut(); }catch(e){}
   toast('Logged out!','ok');
 }
