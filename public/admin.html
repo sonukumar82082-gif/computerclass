@@ -280,12 +280,14 @@ input,select,textarea{font-family:var(--font);outline:none}
   <!-- Reset Password Panel -->
   <div id="resetPanel" style="display:none;margin-top:16px">
   <div class="login-card">
-    <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:12px">Set New Password</div>
-    <div class="lf"><label>New Admin Email</label><input type="email" id="newAdminEmail" placeholder="New admin email"></div>
-    <div class="lf"><label>New Password</label><input type="password" id="newAdminPass" placeholder="New password (min 6 chars)"></div>
-    <div class="lf"><label>Confirm Password</label><input type="password" id="newAdminPass2" placeholder="Confirm password"></div>
+    <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:12px">🔑 Password Reset</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.5">
+      Firebase aapke registered email pe password reset link bhejega. Email check karke naya password set karo.
+    </div>
+    <div class="lf"><label>Admin Email</label><input type="email" id="newAdminEmail" placeholder="Apna admin email daalo"></div>
     <div id="resetErr" style="color:#fca5a5;font-size:11px;margin-bottom:10px;display:none"></div>
-    <button class="login-btn" onclick="doResetPassword()">Save New Credentials</button>
+    <button class="login-btn" id="resetBtn" onclick="doResetPassword()">Send Reset Email</button>
+    <button class="back-btn" onclick="hideRecovery()">Cancel</button>
   </div>
   </div>
   
@@ -1150,40 +1152,51 @@ function hideRecovery(){
 
 function doRecovery(){
   const email=document.getElementById('recEmail').value.trim().toLowerCase();
-  const key=document.getElementById('recKey').value;
+  const key=document.getElementById('recKey').value.trim();
   const err=document.getElementById('recErr');
   
   if(email===MASTER_EMAIL.toLowerCase() && key===MASTER_RECOVERY_KEY){
     err.style.display='none';
     document.getElementById('recoveryPanel').style.display='none';
     document.getElementById('resetPanel').style.display='block';
-    document.getElementById('newAdminEmail').value=localStorage.getItem('ssc_admin_email')||ADMIN_EMAIL;
+    // Pre-fill with master email
+    document.getElementById('newAdminEmail').value=MASTER_EMAIL;
   } else {
+    err.textContent='❌ Email ya Recovery Key galat hai!';
     err.style.display='block';
   }
 }
 
 async function doResetPassword(){
   const email=document.getElementById('newAdminEmail').value.trim();
-  const pass=document.getElementById('newAdminPass').value;
-  const pass2=document.getElementById('newAdminPass2').value;
   const err=document.getElementById('resetErr');
+  const btn=document.getElementById('resetBtn');
 
-  if(!email || !pass){err.textContent='Email aur Password zaroori hai!';err.style.display='block';return;}
-  if(pass.length<6){err.textContent='Password kam se kam 6 characters ka hona chahiye!';err.style.display='block';return;}
-  if(pass!==pass2){err.textContent='Dono password match nahi kar rahe!';err.style.display='block';return;}
+  if(!email){err.textContent='❌ Email daalo!';err.style.display='block';return;}
+
+  btn.textContent='Sending...';btn.disabled=true;
+  err.style.display='none';
 
   try {
-    // Firebase Auth se password reset karo
     await auth.sendPasswordResetEmail(email);
-    err.style.display='none';
-    alert('Password reset email bheja gaya: '+email+'\nEmail check karo aur naya password set karo.');
-    hideRecovery();
-    document.getElementById('lEmail').value=email;
-    document.getElementById('lPass').value='';
-  } catch(e) {
-    err.textContent='❌ Error: '+e.message;
+    err.style.color='#86efac';
+    err.textContent='✅ Password reset email bhej diya: '+email+'. Email check karo aur naya password set karo!';
     err.style.display='block';
+    btn.textContent='Email Sent ✅';
+    setTimeout(()=>{
+      hideRecovery();
+      document.getElementById('lEmail').value=email;
+      document.getElementById('lPass').value='';
+      btn.textContent='Send Reset Email';btn.disabled=false;
+      err.style.color='#fca5a5';err.style.display='none';
+    },3500);
+  } catch(e) {
+    let msg='❌ Error: '+e.message;
+    if(e.code==='auth/user-not-found') msg='❌ Yeh email Firebase mein registered nahi hai!';
+    if(e.code==='auth/invalid-email') msg='❌ Email format galat hai!';
+    if(e.code==='auth/too-many-requests') msg='❌ Bahut saari requests! Thodi der baad try karo.';
+    err.textContent=msg;err.style.display='block';
+    btn.textContent='Send Reset Email';btn.disabled=false;
   }
 }
 
@@ -1503,7 +1516,7 @@ function prepCF(c=null){
   else{document.getElementById('cThumbPrev').style.display='none';document.getElementById('cThumbPh').style.display='block'}
 }
 function editCourse(id){prepCF(courses.find(x=>x.id===id));aNav(null,'addCourseP')}
-function saveCourse(){
+async function saveCourse(){
   reloadAll();
   const name=document.getElementById('cfName').value.trim();
   if(!name){toast('❌ Name ज़रूरी है!','err');return}
@@ -1513,7 +1526,7 @@ function saveCourse(){
   else{courses.push({id:uid(),...data});await save(K.c,courses);toast('✅ Course added!','ok')}
   await reloadFromFirebase();updateCounts();document.getElementById('cfMsg').textContent='✅ Saved!';setTimeout(()=>{aNav(null,'coursesP')},600);
 }
-function delCourse(id){
+async function delCourse(id){
   confirm2('Course Delete?','सभी Modules और Topics भी delete होंगे।',async ()=>{
     reloadAll();const mIds=modules.filter(m=>m.cId===id).map(m=>m.id);
     await save(K.t,topics.filter(t=>!mIds.includes(t.mId)));
@@ -1548,7 +1561,7 @@ async function saveModule(){
   else{modules.push({id:uid(),...data});await save(K.m,modules);toast('✅ Added!','ok')}
   updateCounts();document.getElementById('mfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'modsP'),600);
 }
-function delModule(id){
+async function delModule(id){
   confirm2('Module Delete?','सभी Topics भी delete होंगे।',async ()=>{
     reloadAll();await save(K.t,topics.filter(t=>t.mId!==id));await save(K.m,modules.filter(x=>x.id!==id));
     await reloadFromFirebase();updateCounts();renderMTbl();toast('🗑 Deleted','ok');
@@ -1579,7 +1592,7 @@ async function saveTopic(){
   else{topics.unshift({id:uid(),...data});await save(K.t,topics);toast('✅ Added!','ok')}
   updateCounts();document.getElementById('tfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'topicsP'),600);
 }
-function delTopic(id){
+async function delTopic(id){
   confirm2('Topic Delete?','यह permanently delete होगा।',async()=>{
     reloadAll();await save(K.t,topics.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderTTbl();toast('🗑 Deleted','ok');
   });
@@ -1659,7 +1672,7 @@ async function saveUser(){
   updateCounts();document.getElementById('ufMsg').textContent='Saved!';
   setTimeout(()=>aNav(null,data.role==='student'?'studentsP':'staffP'),600);
 }
-function delUser(id){
+async function delUser(id){
   confirm2('User Delete?','यह user permanently delete होगा।',async()=>{
     reloadAll();await save(K.users,users.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderStuTbl();renderStaffTbl();toast('🗑 Deleted','ok');
   });
@@ -1939,7 +1952,7 @@ function cancelExcelImport(){
   document.getElementById('excelPreviewArea').style.display='none';
 }
 
-function importExcelStudents(){
+async function importExcelStudents(){
   if(!excelData||!excelData.length){
     toast('No data to import!','err');
     return;
@@ -1997,7 +2010,7 @@ function importExcelStudents(){
   renderBatTbl();
   renderStuTbl();
 }
-function delBatch(id){
+async function delBatch(id){
   confirm2('Batch Delete?','Students का batch assignment हट जाएगा।',async()=>{
     reloadAll();
     users.forEach(u=>{if(u.batchId===id)u.batchId=null});
@@ -2032,7 +2045,7 @@ async function saveSlide(){
   else{if(slides.length>=10){toast('❌ Maximum 10 banners!','err');return}slides.push({id:uid(),...data});await save(K.slides,slides);toast('✅ Banner added!','ok')}
   updateCounts();document.getElementById('sfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'slidesP'),600);
 }
-function delSlide(id){
+async function delSlide(id){
   confirm2('Slide Delete?','यह slide delete होगी।',async()=>{
     reloadAll();await save(K.slides,slides.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderSlidesList();toast('🗑 Deleted','ok');
   });
@@ -2059,7 +2072,7 @@ async function saveNotice(){
   else{notices.unshift({id:uid(),...data});await save(K.notices,notices);toast('✅ Notice added!','ok')}
   updateCounts();document.getElementById('nfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'noticesP'),600);
 }
-function delNotice(id){
+async function delNotice(id){
   confirm2('Notice Delete?','',async()=>{
     reloadAll();await save(K.notices,notices.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderNoticesList();toast('🗑 Deleted','ok');
   });
@@ -2083,7 +2096,7 @@ async function saveAnn(){
   else{announcements.push({id:uid(),...data});await save(K.announcements,announcements);toast('✅ Announcement added!','ok')}
   updateCounts();document.getElementById('afMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'annP'),600);
 }
-function delAnn(id){
+async function delAnn(id){
   confirm2('Announcement Delete?','',async()=>{
     reloadAll();await save(K.announcements,announcements.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderAnnList();toast('🗑 Deleted','ok');
   });
@@ -2135,7 +2148,7 @@ async function saveQuizSec(){
   else{quizSecs.push({id:uid(),...data});await save(K.quizSecs,quizSecs);toast('Quiz Section added!','ok')}
   updateCounts();document.getElementById('qsfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
 }
-function delQuizSec(id){
+async function delQuizSec(id){
   confirm2('Quiz Section Delete?','Iske saare chapters bhi delete honge',async()=>{
     reloadAll();
     await save(K.quizChs,quizChs.filter(x=>x.secId!==id));
@@ -2174,7 +2187,7 @@ async function saveQuizCh(){
   else{quizChs.push({id:uid(),...data});await save(K.quizChs,quizChs);toast('Quiz Chapter added!','ok')}
   updateCounts();document.getElementById('qcfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'quizP'),600);
 }
-function delQuizCh(id){
+async function delQuizCh(id){
   confirm2('Quiz Chapter Delete?','',async()=>{
     reloadAll();await save(K.quizChs,quizChs.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderQuizList();toast('Deleted','ok');
   });
@@ -2270,7 +2283,7 @@ async function saveCustomPage(){
   else{customPages.push({id:uid(),...data});await save(K.customPages,customPages);toast('Custom Page added!','ok')}
   updateCounts();document.getElementById('cpfMsg').textContent='Saved!';setTimeout(()=>aNav(null,'customPagesP'),600);
 }
-function delCustomPage(id){
+async function delCustomPage(id){
   confirm2('Custom Page Delete?','',async()=>{
     reloadAll();await save(K.customPages,customPages.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderCustomPagesList();toast('Deleted','ok');
   });
@@ -2323,7 +2336,7 @@ async function savePDF(){
   else{pdfs.push({id:uid(),...data});await save(K.pdfs,pdfs);toast('✅ PDF added!','ok')}
   updateCounts();document.getElementById('pfMsg').textContent='✅ Saved!';setTimeout(()=>aNav(null,'pdfP'),600);
 }
-function delPDF(id){
+async function delPDF(id){
   confirm2('PDF Delete?','',async()=>{
     reloadAll();await save(K.pdfs,pdfs.filter(x=>x.id!==id));await reloadFromFirebase();updateCounts();renderPDFTbl();toast('🗑 Deleted','ok');
   });
