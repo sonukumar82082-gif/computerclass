@@ -1049,6 +1049,8 @@ img{display:block;max-width:100%}
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     // Enable offline persistence for better data availability
+    // Force long polling - WebChannel 404 fix for all networks
+    db.settings({ experimentalForceLongPolling: true, merge: true });
     db.enablePersistence({synchronizeTabs: true}).catch(e => console.log("Persistence error:", e));
     firebaseReady = true;
   } catch(e) {
