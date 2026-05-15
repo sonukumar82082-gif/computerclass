@@ -1054,7 +1054,7 @@ img{display:block;max-width:100%}
   <!-- HTML snippet content -->
   <div id="customPageContent" style="padding:16px 16px 100px;max-width:1000px;margin:0 auto;display:none"></div>
   <!-- Full HTML doc iframe (for <!DOCTYPE html> pages) -->
-  <iframe id="customPageFrame" style="width:100%;border:none;display:none;min-height:calc(100vh - var(--nav-h));height:auto" scrolling="yes"></iframe>
+  <iframe id="customPageFrame" style="width:100%;border:none;display:none;height:calc(100vh - var(--nav-h))" scrolling="yes"></iframe>
   <iframe id="customPageLinkFrame" style="width:100%;border:none;display:none;height:calc(100vh - var(--nav-h))" allow="fullscreen" scrolling="yes"></iframe>
 </div>
 
@@ -1396,21 +1396,16 @@ function closeMobileTabs(){
 }
 
 function autoResizeIframe(iframe){
-  try{
-    const resize=()=>{
-      const h=iframe.contentWindow.document.documentElement.scrollHeight||iframe.contentWindow.document.body.scrollHeight;
-      if(h>100) iframe.style.height=h+'px';
-    };
-    resize();
-    // Content load hone ke baad bhi resize karo (quiz jaise dynamic pages ke liye)
-    iframe.contentWindow.addEventListener('resize',resize);
-    // MutationObserver — DOM change hone pe bhi resize (quiz answer select karne pe)
-    const mo=new MutationObserver(resize);
-    mo.observe(iframe.contentWindow.document.body,{childList:true,subtree:true,attributes:true});
-  }catch(e){
-    // Cross-origin iframe — fixed height rakhte hain
-    iframe.style.height='100vh';
-  }
+  // Full HTML srcdoc pages (quiz, custom apps) ke liye fixed height best hai
+  // scrollHeight se cut hone ki problem aati hai
+  const navH = document.querySelector('.nav')?.offsetHeight || 56;
+  iframe.style.height = (window.innerHeight - navH) + 'px';
+  // Window resize pe bhi update karo
+  window._iframeResizer = function(){
+    iframe.style.height = (window.innerHeight - navH) + 'px';
+  };
+  window.removeEventListener('resize', window._iframeResizer);
+  window.addEventListener('resize', window._iframeResizer);
 }
 
 function openCustomPage(category){
