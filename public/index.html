@@ -51,7 +51,7 @@ img{display:block;max-width:100%}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
 /* ─── VIEWS ─── */
-.view{display:none!important}.view.on{display:block!important}
+.view{display:none!important}.view.on{display:block!important}#vCustomPage.on{display:flex!important;flex-direction:column;padding:0;margin:0;}
 
 /* ─── NAV ─── */
 .nav{position:fixed;top:0;left:0;right:0;z-index:400;height:var(--nav-h);background:rgba(15,23,42,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08)}
@@ -1050,7 +1050,7 @@ img{display:block;max-width:100%}
 </div>
 
 <!-- ═══ CUSTOM PAGE ═══ -->
-<div id="vCustomPage" class="view">
+<div id="vCustomPage" class="view" style="display:flex;flex-direction:column;padding:0;">
   <!-- HTML snippet content -->
   <div id="customPageContent" style="padding:16px 16px 100px;max-width:1000px;margin:0 auto;display:none"></div>
   <!-- Full HTML doc iframe (for <!DOCTYPE html> pages) -->
@@ -1278,6 +1278,11 @@ function showView(id,skipHistory=false){
       }
     }
   }
+  // Custom page se wapas jaate waqt bottom-nav restore karo
+  const currentActive=document.querySelector('.view.on')?.id;
+  if(currentActive==='vCustomPage' && id!=='vCustomPage'){
+    document.querySelectorAll('.bottom-nav').forEach(el=>el.style.display='');
+  }
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   window.scrollTo(0,0);
@@ -1472,6 +1477,8 @@ function openCustomPageById(pageId){
   setBc([{t:'Home',fn:'goHome()'},{t:categories[page.category]||page.category},{t:page.title}]);
   showView('vCustomPage');
   closeMobileTabs();
+  // Bottom nav hide karo - iframe ko pura space do
+  document.querySelectorAll('.bottom-nav').forEach(el=>el.style.display='none');
 }
 
 /* ════ HOME ════ */
