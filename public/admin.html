@@ -366,6 +366,10 @@ input,select,textarea{font-family:var(--font);outline:none}
 <!-- MAIN -->
 <div class="admin-main">
   <div class="admin-tb">
+  <!-- Global Back Arrow (Chrome style) -->
+  <button id="globalBackBtn" onclick="goBack()" title="Back" style="opacity:0;pointer-events:none;width:34px;height:34px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity .2s,background .15s;margin-right:2px" onmouseover="this.style.background='var(--blue-lt)'" onmouseout="this.style.background='var(--bg)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink2)"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
   <button class="mobile-menu-btn" onclick="openSidebar()">Menu</button>
   <div style="flex:1;min-width:0"><div class="at-title" id="aTopTitle">Dashboard</div><div class="at-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Admin Panel</div></div>
   <a href="index.html" target="_blank" class="nbtn nbtn-ghost" style="font-size:11px;white-space:nowrap">Site</a>
@@ -614,7 +618,7 @@ input,select,textarea{font-family:var(--font);outline:none}
               <div class="field"><label>Color</label><input type="text" id="cfClr" placeholder="#2563eb"></div>
               <div class="field"><label>Background</label><input type="text" id="cfBg" placeholder="#eff6ff"></div>
             </div>
-            <div class="factions"><button class="btn-s" onclick="saveCourse()">💾 Save</button><button class="btn-c" onclick="aNav(null,'coursesP')">Cancel</button><span class="fmsg" id="cfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveCourse()">💾 Save</button><span class="fmsg" id="cfMsg"></span></div>
           </div></div>
         </div>
 
@@ -632,7 +636,7 @@ input,select,textarea{font-family:var(--font);outline:none}
               <div class="field"><label>Color</label><input type="text" id="mfClr" placeholder="#6366f1"></div>
               <div class="field"><label>Background</label><input type="text" id="mfBg" placeholder="#ede9fe"></div>
             </div>
-            <div class="factions"><button class="btn-s" onclick="saveModule()">💾 Save</button><button class="btn-c" onclick="aNav(null,'modsP')">Cancel</button><span class="fmsg" id="mfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveModule()">💾 Save</button><span class="fmsg" id="mfMsg"></span></div>
           </div></div>
         </div>
 
@@ -659,7 +663,7 @@ input,select,textarea{font-family:var(--font);outline:none}
               <textarea id="tfNotes" class="txt-a" placeholder="# Heading&#10;## Sub&#10;- bullet&#10;**bold**&#10;💡 Tip&#10;⭐ Important&#10;✅ Example"></textarea>
             </div>
             <div class="field"><label>🎯 Canva PPT Link</label><input type="url" id="tfPPT" placeholder="https://www.canva.com/design/..."></div>
-            <div class="factions"><button class="btn-s" onclick="saveTopic()">💾 Save</button><button class="btn-c" onclick="aNav(null,'topicsP')">Cancel</button><span class="fmsg" id="tfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveTopic()">💾 Save</button><span class="fmsg" id="tfMsg"></span></div>
           </div></div>
         </div>
 
@@ -693,7 +697,12 @@ input,select,textarea{font-family:var(--font);outline:none}
     <select id="ufBatch"><option value="">-- Batch Choose Karein --</option></select>
     <div style="font-size:10px;color:var(--ink3);margin-top:4px">Student ko batch assign karna zaroori hai course access ke liye</div>
   </div>
-  <div class="factions"><button class="btn-s" onclick="saveUser()">Save</button><button class="btn-c" onclick="aNav(null,'studentsP')">Cancel</button><span class="fmsg" id="ufMsg"></span></div>
+  <div class="field" id="ufCourseAccessField" style="display:none">
+    <label>Course Access <span style="font-size:10px;color:var(--ink3);font-weight:400">(staff ko kaunse courses dikhane hain)</span></label>
+    <div id="ufCourseCheckboxes" style="display:flex;flex-direction:column;gap:8px;margin-top:6px;max-height:200px;overflow-y:auto;padding:4px 0"></div>
+    <div style="font-size:10px;color:var(--ink3);margin-top:6px">⚠️ Koi select na karo to staff ko <b>sab courses</b> dikhenge</div>
+  </div>
+  <div class="factions"><button class="btn-s" onclick="saveUser()">Save</button><span class="fmsg" id="ufMsg"></span></div>
   </div></div>
   </div>
 
@@ -706,7 +715,7 @@ input,select,textarea{font-family:var(--font);outline:none}
               <div class="field"><label>Course Assign *</label><select id="bfCourse"></select></div>
             </div>
             <div class="field"><label>Description</label><input type="text" id="bfDesc" placeholder="Morning batch, evening batch..."></div>
-            <div class="factions"><button class="btn-s" onclick="saveBatch()">💾 Save</button><button class="btn-c" onclick="aNav(null,'batchesP')">Cancel</button><span class="fmsg" id="bfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveBatch()">💾 Save</button><span class="fmsg" id="bfMsg"></span></div>
           </div></div>
 
           <!-- UNLOCK TOPICS per batch -->
@@ -739,7 +748,7 @@ input,select,textarea{font-family:var(--font);outline:none}
               <div class="field"><label>Secondary Button</label><input type="text" id="sfBtn2" placeholder="Login करें (optional)"></div>
             </div>
             <div class="field"><label>Order (1-10)</label><input type="number" id="sfOrder" min="1" max="10" placeholder="1"></div>
-            <div class="factions"><button class="btn-s" onclick="saveSlide()">💾 Save</button><button class="btn-c" onclick="aNav(null,'slidesP')">Cancel</button><span class="fmsg" id="sfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveSlide()">💾 Save</button><span class="fmsg" id="sfMsg"></span></div>
           </div></div>
         </div>
 
@@ -749,7 +758,7 @@ input,select,textarea{font-family:var(--font);outline:none}
             <input type="hidden" id="afId">
             <div class="field"><label>Announcement Text *</label><input type="text" id="afText" placeholder="jaise: New Batch Starting from 15 Jan!"></div>
             <div style="font-size:11px;color:var(--ink3);margin-bottom:12px">Yeh text homepage ke top ticker mein scroll karega</div>
-            <div class="factions"><button class="btn-s" onclick="saveAnn()">Save</button><button class="btn-c" onclick="aNav(null,'annP')">Cancel</button><span class="fmsg" id="afMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveAnn()">Save</button><span class="fmsg" id="afMsg"></span></div>
           </div></div>
         </div>
 
@@ -760,7 +769,7 @@ input,select,textarea{font-family:var(--font);outline:none}
             <div class="field"><label>Course *</label><select id="qsfCourse"><option value="">-- Select Course --</option></select></div>
             <div class="field"><label>Section Name *</label><input type="text" id="qsfName" placeholder="jaise: Computer Fundamentals Quiz"></div>
             <div class="field"><label>Order</label><input type="number" id="qsfOrder" min="1" placeholder="1"></div>
-            <div class="factions"><button class="btn-s" onclick="saveQuizSec()">Save</button><button class="btn-c" onclick="aNav(null,'quizP')">Cancel</button><span class="fmsg" id="qsfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveQuizSec()">Save</button><span class="fmsg" id="qsfMsg"></span></div>
           </div></div>
         </div>
 
@@ -783,7 +792,7 @@ Ya HTML code paste karein (iframe, embed etc.)'></textarea>
               {"questions":[{"q":"Sawaal?","options":["Option A","Option B","Option C","Option D"],"ans":0}]}<br>
               <b>ans</b> = correct option ka index (0=A, 1=B, 2=C, 3=D)
             </div>
-            <div class="factions"><button class="btn-s" onclick="saveQuizCh()">Save</button><button class="btn-c" onclick="aNav(null,'quizP')">Cancel</button><span class="fmsg" id="qcfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveQuizCh()">Save</button><span class="fmsg" id="qcfMsg"></span></div>
           </div></div>
         </div>
 
@@ -835,7 +844,7 @@ Example:
                 <span style="color:var(--ink3)">Example: Google Form, YouTube, Google Sites, Notion page etc.</span>
               </div>
             </div>
-            <div class="factions"><button class="btn-s" onclick="saveCustomPage()">Save</button><button class="btn-c" onclick="aNav(null,'customPagesP')">Cancel</button><span class="fmsg" id="cpfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveCustomPage()">Save</button><span class="fmsg" id="cpfMsg"></span></div>
           </div></div>
         </div>
 
@@ -856,7 +865,7 @@ Example:
               </div>
               <input type="file" id="pfInput" accept="application/pdf" style="display:none" onchange="handlePDF(this)">
             </div>
-            <div class="factions"><button class="btn-s" onclick="savePDF()">💾 Save</button><button class="btn-c" onclick="aNav(null,'pdfP')">Cancel</button><span class="fmsg" id="pfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="savePDF()">💾 Save</button><span class="fmsg" id="pfMsg"></span></div>
           </div></div>
         </div>
 
@@ -870,7 +879,7 @@ Example:
               <div class="field"><label>Date</label><input type="text" id="nfDate" placeholder="जैसे: 15 Jan 2025"></div>
               <div class="field"><label>Important?</label><select id="nfImp"><option value="false">Normal</option><option value="true">⭐ Important</option></select></div>
             </div>
-            <div class="factions"><button class="btn-s" onclick="saveNotice()">💾 Save</button><button class="btn-c" onclick="aNav(null,'noticesP')">Cancel</button><span class="fmsg" id="nfMsg"></span></div>
+            <div class="factions"><button class="btn-s" onclick="saveNotice()">💾 Save</button><span class="fmsg" id="nfMsg"></span></div>
           </div></div>
         </div>
 
@@ -926,7 +935,7 @@ Example:
   }
   
   /* ════ STORE ════ */
-  const K={c:'courses',m:'modules',t:'topics',users:'users',batches:'batches',slides:'slides',pdfs:'pdfs',notices:'notices',announcements:'announcements',quizSecs:'quizSecs',quizChs:'quizChs',customPages:'customPages',siteSettings:'siteSettings'};
+  const K={c:'courses',m:'modules',t:'topics',users:'users',batches:'batches',slides:'slides',pdfs:'pdfs',notices:'notices',announcements:'announcements',quizSecs:'quizSecs',quizChs:'quizChs',customPages:'customPages',scores:'scores',siteSettings:'siteSettings'};
   
   // LocalStorage functions
   const loadLocal=k=>JSON.parse(localStorage.getItem('ssc_'+k)||'[]');
@@ -991,12 +1000,13 @@ Example:
     await saveFirebase(k,v);
   };
   
-  let courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages;
+  let courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages,scores_admin;
   
   function reloadAll(){
     courses=loadLocal(K.c);modules=loadLocal(K.m);topics=loadLocal(K.t);users=loadLocal(K.users);
     batches=loadLocal(K.batches);slides=loadLocal(K.slides);pdfs=loadLocal(K.pdfs);notices=loadLocal(K.notices);
     announcements=loadLocal(K.announcements);quizSecs=loadLocal(K.quizSecs);quizChs=loadLocal(K.quizChs);customPages=loadLocal(K.customPages);
+    scores_admin=loadLocal(K.scores);
   }
   
   // Async reload from Firebase
@@ -1006,15 +1016,17 @@ Example:
     try {
       // Pehle purana localStorage clear karo
       Object.values(K).forEach(k => localStorage.removeItem('ssc_'+k));
-      [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages] = await Promise.all([
+      let scores_data;
+      [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages,scores_data] = await Promise.all([
         loadFirebase(K.c), loadFirebase(K.m), loadFirebase(K.t), loadFirebase(K.users), loadFirebase(K.batches),
         loadFirebase(K.slides), loadFirebase(K.pdfs), loadFirebase(K.notices), loadFirebase(K.announcements),
-        loadFirebase(K.quizSecs), loadFirebase(K.quizChs), loadFirebase(K.customPages)
+        loadFirebase(K.quizSecs), loadFirebase(K.quizChs), loadFirebase(K.customPages), loadFirebase(K.scores)
       ]);
       // Fresh data save karo localStorage mein
       saveLocal(K.c,courses);saveLocal(K.m,modules);saveLocal(K.t,topics);saveLocal(K.users,users);
       saveLocal(K.batches,batches);saveLocal(K.slides,slides);saveLocal(K.pdfs,pdfs);saveLocal(K.notices,notices);
-      saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);saveLocal(K.customPages,customPages);
+      saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);
+      saveLocal(K.customPages,customPages);saveLocal(K.scores,scores_data);
     } catch(e) {
       console.log("Firebase sync error:", e);
       reloadAll();
@@ -1202,7 +1214,39 @@ async function doResetPassword(){
 
 
 /* ════ ADMIN NAV ════ */
-function aNav(btn,pid){
+const _navHistory=[];
+let _currentPanel='dashP';
+
+function goBack(){
+  if(_navHistory.length===0)return;
+  const prev=_navHistory.pop();
+  aNav(null,prev,true); // true = don't push to history
+}
+
+function _updateBackBtn(){
+  const btn=document.getElementById('globalBackBtn');
+  if(!btn)return;
+  if(_navHistory.length>0){
+    btn.style.opacity='1';
+    btn.style.pointerEvents='auto';
+  } else {
+    btn.style.opacity='0';
+    btn.style.pointerEvents='none';
+  }
+}
+
+function aNav(btn,pid,_isBack){
+  // Push current panel to history (unless going back or going to dashboard)
+  if(!_isBack && _currentPanel && _currentPanel!==pid){
+    if(pid==='dashP'){
+      _navHistory.length=0; // dashboard pe clear karo history
+    } else {
+      _navHistory.push(_currentPanel);
+    }
+  }
+  _currentPanel=pid;
+  _updateBackBtn();
+
   document.querySelectorAll('.asb-item').forEach(b=>b.classList.remove('on'));
   if(btn)btn.classList.add('on');
   document.querySelectorAll('.a-panel').forEach(p=>p.classList.remove('on'));
@@ -1226,15 +1270,18 @@ async function smartSync(callback){
   if(callback) callback();
   if(firebaseReady){
     try{
-      [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages] = await Promise.all([
+      let scores_data;
+      [courses,modules,topics,users,batches,slides,pdfs,notices,announcements,quizSecs,quizChs,customPages,scores_data] = await Promise.all([
         loadFirebase(K.c),loadFirebase(K.m),loadFirebase(K.t),loadFirebase(K.users),loadFirebase(K.batches),
         loadFirebase(K.slides),loadFirebase(K.pdfs),loadFirebase(K.notices),loadFirebase(K.announcements),
-        loadFirebase(K.quizSecs),loadFirebase(K.quizChs),loadFirebase(K.customPages)
+        loadFirebase(K.quizSecs),loadFirebase(K.quizChs),loadFirebase(K.customPages),loadFirebase(K.scores)
       ]);
+      scores_admin=scores_data;
       // localStorage update karo fresh data se
       saveLocal(K.c,courses);saveLocal(K.m,modules);saveLocal(K.t,topics);saveLocal(K.users,users);
       saveLocal(K.batches,batches);saveLocal(K.slides,slides);saveLocal(K.pdfs,pdfs);saveLocal(K.notices,notices);
-      saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);saveLocal(K.customPages,customPages);
+      saveLocal(K.announcements,announcements);saveLocal(K.quizSecs,quizSecs);saveLocal(K.quizChs,quizChs);
+      saveLocal(K.customPages,customPages);saveLocal(K.scores,scores_admin);
       if(callback) callback(); // Firebase data se dobara render
     } catch(e){ console.log('[sync] Firebase error:',e); }
   }
@@ -1605,6 +1652,23 @@ function toggleStaffPhoto(){
   const role=document.getElementById('ufRole').value;
   document.getElementById('ufPhotoField').style.display=role==='staff'?'block':'none';
   document.getElementById('ufBatchField').style.display=role==='student'?'block':'none';
+  document.getElementById('ufCourseAccessField').style.display=role==='staff'?'block':'none';
+  if(role==='staff') renderCourseCheckboxes();
+}
+
+function renderCourseCheckboxes(selectedIds=[]){
+  const wrap=document.getElementById('ufCourseCheckboxes');
+  if(!wrap)return;
+  if(!courses||courses.length===0){wrap.innerHTML='<div style="font-size:12px;color:var(--ink3)">Koi course nahi — pehle course add karein</div>';return;}
+  wrap.innerHTML=courses.map(c=>`
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r8);border:1px solid var(--border);cursor:pointer;background:var(--bg)">
+      <input type="checkbox" value="${c.id}" ${selectedIds.includes(c.id)?'checked':''} style="width:16px;height:16px;accent-color:var(--blue);cursor:pointer;flex-shrink:0">
+      <span style="font-size:13px;font-weight:600;color:var(--ink)">${c.ico||'📚'} ${c.name}</span>
+    </label>`).join('');
+}
+
+function getSelectedCourseIds(){
+  return Array.from(document.querySelectorAll('#ufCourseCheckboxes input[type="checkbox"]')).filter(cb=>cb.checked).map(cb=>cb.value);
 }
 
 function handleStaffPhoto(input){
@@ -1652,6 +1716,7 @@ function prepUF(role='student',u=null){
   document.getElementById('ufMsg').textContent='';
   toggleStaffPhoto();
   loadStaffPhotoPreview(u?.photo||null);
+  if((u?.role||role)==='staff') renderCourseCheckboxes(u?.assignedCourses||[]);
 }
 function editUser(id){prepUF(undefined,users.find(x=>x.id===id));aNav(null,'addUserP')}
 async function saveUser(){
@@ -1663,7 +1728,8 @@ async function saveUser(){
   if(pass.length<6){toast('Password min 6 chars!','err');return}
   const id=document.getElementById('ufId').value;
   const role=document.getElementById('ufRole').value;
-  const data={name,email,pass,role,batchId:role==='student'?document.getElementById('ufBatch').value||null:null,photo:role==='staff'?staffPhotoData:null};
+  const assignedCourses=role==='staff'?getSelectedCourseIds():undefined;
+  const data={name,email,pass,role,batchId:role==='student'?document.getElementById('ufBatch').value||null:null,photo:role==='staff'?staffPhotoData:null,...(role==='staff'?{assignedCourses}:{})};
   if(id){const i=users.findIndex(x=>x.id===id);if(i>-1)users[i]={...users[i],...data};await save(K.users,users);toast('Updated!','ok')}
   else{
     if(users.find(x=>x.email.toLowerCase()===email.toLowerCase())){toast('Yeh email pehle se exist karti hai!','err');return}
