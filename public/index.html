@@ -51,7 +51,7 @@ img{display:block;max-width:100%}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
 
 /* ─── VIEWS ─── */
-.view{display:none!important}.view.on{display:block!important}#vCustomPage.on{display:flex!important;flex-direction:column;padding:0;margin:0;}
+.view{display:none!important}.view.on{display:block!important}#vCustomPage.on{display:block!important;padding:0;margin:0;}
 
 /* ─── NAV ─── */
 .nav{position:fixed;top:0;left:0;right:0;z-index:400;height:var(--nav-h);background:rgba(15,23,42,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08)}
@@ -1050,12 +1050,13 @@ img{display:block;max-width:100%}
 </div>
 
 <!-- ═══ CUSTOM PAGE ═══ -->
-<div id="vCustomPage" class="view" style="display:flex;flex-direction:column;padding:0;">
+<div id="vCustomPage" class="view" style="padding:0;margin:0;">
   <!-- HTML snippet content -->
-  <div id="customPageContent" style="padding:16px 16px 100px;max-width:1000px;margin:0 auto;display:none"></div>
-  <!-- Full HTML doc iframe (for <!DOCTYPE html> pages) -->
-  <iframe id="customPageFrame" style="width:100%;border:none;display:none;height:calc(100vh - var(--nav-h))" scrolling="yes"></iframe>
-  <iframe id="customPageLinkFrame" style="width:100%;border:none;display:none;height:calc(100vh - var(--nav-h))" allow="fullscreen" scrolling="yes"></iframe>
+  <div id="customPageContent" style="margin-top:var(--nav-h);padding:16px 16px 80px;max-width:1000px;margin-left:auto;margin-right:auto;display:none"></div>
+  <!-- Full HTML doc iframe - position:fixed so no white space ever -->
+  <iframe id="customPageFrame" style="width:100%;border:none;display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;height:calc(100vh - var(--nav-h));" scrolling="yes"></iframe>
+  <!-- External link iframe -->
+  <iframe id="customPageLinkFrame" style="width:100%;border:none;display:none;position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;height:calc(100vh - var(--nav-h));" allow="fullscreen" scrolling="yes"></iframe>
 </div>
 
 <!-- FULLSCREEN -->
@@ -1278,10 +1279,16 @@ function showView(id,skipHistory=false){
       }
     }
   }
-  // Custom page se wapas jaate waqt bottom-nav restore karo
+  // Custom page se wapas jaate waqt cleanup karo
   const currentActive=document.querySelector('.view.on')?.id;
   if(currentActive==='vCustomPage' && id!=='vCustomPage'){
     document.querySelectorAll('.bottom-nav').forEach(el=>el.style.display='');
+    // iframe hide karo properly
+    const f1=document.getElementById('customPageFrame');
+    const f2=document.getElementById('customPageLinkFrame');
+    if(f1){f1.style.display='none';f1.src='about:blank';}
+    if(f2){f2.style.display='none';f2.src='about:blank';}
+    window.removeEventListener('resize',window._kyp_resize);
   }
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.getElementById(id).classList.add('on');
@@ -1392,25 +1399,28 @@ function renderNavTabs(){
 }
 
 function toggleMobileTabs(){
-  document.getElementById('mobileTabsMenu').classList.toggle('show');
+  const isOpen=document.getElementById('mobileTabsMenu').classList.toggle('show');
   document.getElementById('mobMenuOverlay').classList.toggle('show');
+  document.body.style.overflow=isOpen?'hidden':'';
 }
 function closeMobileTabs(){
   document.getElementById('mobileTabsMenu').classList.remove('show');
   const ov=document.getElementById('mobMenuOverlay');if(ov)ov.classList.remove('show');
+  document.body.style.overflow='';
 }
 
 function autoResizeIframe(iframe){
-  // Full HTML srcdoc pages (quiz, custom apps) ke liye fixed height best hai
-  // scrollHeight se cut hone ki problem aati hai
-  const navH = document.querySelector('.nav')?.offsetHeight || 56;
-  iframe.style.height = (window.innerHeight - navH) + 'px';
-  // Window resize pe bhi update karo
-  window._iframeResizer = function(){
-    iframe.style.height = (window.innerHeight - navH) + 'px';
-  };
-  window.removeEventListener('resize', window._iframeResizer);
-  window.addEventListener('resize', window._iframeResizer);
+  // iframe ab position:fixed hai - resize ki zaroorat nahi
+  // Window resize pe height update karo
+  function updateH(){
+    const navH=document.querySelector('.nav')?.offsetHeight||56;
+    iframe.style.height=(window.innerHeight-navH)+'px';
+    iframe.style.top=navH+'px';
+  }
+  updateH();
+  window.removeEventListener('resize',window._kyp_resize);
+  window._kyp_resize=updateH;
+  window.addEventListener('resize',window._kyp_resize);
 }
 
 function openCustomPage(category){
@@ -2072,19 +2082,46 @@ function toast(msg,type='ok'){const el=document.getElementById('tst');el.textCon
 async function initApp(){
   showLoading(true);
   await raFirebase();
-  await seed(); // Firebase check ke baad seed karo
+  await seed();
   renderHome();
   renderNavTabs();
   loadAboutPhoto();
   showLoading(false);
+  startRealTimeListeners();
 }
 initApp();
 
+// ═══ REAL-TIME LISTENERS ═══
+let _rtListeners=[];
+function startRealTimeListeners(){
+  if(!firebaseReady)return;
+  function snapToArr(snap){const a=[];snap.forEach(d=>a.push({id:d.id,...d.data()}));return a;}
+
+  const unsubC=db.collection(K.c).onSnapshot(snap=>{
+    C=snapToArr(snap);svLocal(K.c,C);
+    const av=document.querySelector('.view.on');
+    if(av&&(av.id==='vHome'||av.id==='vStudent'))renderHome();
+    renderNavTabs();
+  },e=>console.log('[RT] courses:',e));
+
+  const unsubA=db.collection(K.announcements).onSnapshot(snap=>{
+    Announcements=snapToArr(snap);svLocal(K.announcements,Announcements);
+    const av=document.querySelector('.view.on');
+    if(av&&av.id==='vHome')renderHome();
+  },e=>console.log('[RT] ann:',e));
+
+  const unsubN=db.collection(K.notices).onSnapshot(snap=>{
+    Notices=snapToArr(snap);svLocal(K.notices,Notices);
+    if(document.getElementById('stuNotices'))renderNotices('stuNotices');
+    if(document.getElementById('staffNotices'))renderNotices('staffNotices');
+  },e=>console.log('[RT] notices:',e));
+
+  _rtListeners=[unsubC,unsubA,unsubN];
+}
+
 // KYP Quiz ya kisi bhi custom page se back message handle karo
-window.addEventListener('message', function(e) {
-  if (e.data === 'kyp_go_back') {
-    goBackOrHome();
-  }
+window.addEventListener('message',function(e){
+  if(e.data==='kyp_go_back')goBackOrHome();
 });
 
 // Tab switch / browser back pe auto re-sync
