@@ -2433,23 +2433,29 @@ function loadAboutPhotoAdmin(){
 function handleAboutPhoto(input){
   const file=input.files[0];
   if(!file)return;
-  if(file.size>500000){
-    toast('Photo 500KB se chhota hona chahiye!','err');
-    return;
-  }
+  if(file.size>500000){toast('Photo 500KB se chhota hona chahiye!','err');return;}
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     const b64=e.target.result;
     localStorage.setItem('ss_about_photo',b64);
     loadAboutPhotoAdmin();
-    toast('Photo saved!','ok');
+    try{
+      if(firebaseReady){
+        await db.collection('siteSettings').doc('aboutPhoto').set({photo:b64,updatedAt:new Date().toISOString()});
+        toast('Photo saved! Sab computers pe dikhe ga ✅','ok');
+      } else {
+        toast('Photo saved!','ok');
+      }
+    }catch(err){console.log('Firebase photo error:',err);toast('Photo saved!','ok');}
   };
   reader.readAsDataURL(file);
   input.value='';
 }
-function removeAboutPhoto(){
+async function removeAboutPhoto(){
   localStorage.removeItem('ss_about_photo');
   loadAboutPhotoAdmin();
+  try{if(firebaseReady)await db.collection('siteSettings').doc('aboutPhoto').delete();}
+  catch(e){console.log('Remove error:',e);}
   toast('Photo removed!','ok');
 }
 
